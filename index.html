@@ -778,27 +778,40 @@ function joinRoom(){
   const raw=document.getElementById('joinCode').value.trim().toUpperCase();
   if(raw.length<4){showNotif('Kode minimal 4 karakter!','err');return;}
   myName=document.getElementById('playerName').value.trim()||document.getElementById('playerName').placeholder;
-  isHost=false;const hp='cks-'+raw;if(peer)peer.destroy();
+  isHost=false;const hp='cks-'+raw;
+
   showConn('Menghubungkan','Mencari ruangan <strong style="color:var(--gold-l)">'+raw+'</strong>...');
-  connectTimeout=setTimeout(()=>{hideConnecting();if(peer){peer.destroy();peer=null;}showNotif('Timeout!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);},15000);
-  peer=new Peer('cks-g-'+Math.random().toString(36).substr(2,9),{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
-  peer.on('open',id=>{
-    myId=id;document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host...';
-    const conn=peer.connect(hp,{reliable:true});
-    const ht=setTimeout(()=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Host tidak ditemukan!','err');setConn('error','Tidak ditemukan');},10000);
-    conn.on('open',()=>{
-      clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();
-      connections[hp]=conn;hostId=hp;roomCode=raw;
-      conn.on('data',d=>onMsg(d,conn.peer));conn.on('close',()=>onDisc(conn.peer));
-      conn.send({type:'join',name:myName});showRoomPanel(raw);
-      showNotif('Berhasil gabung '+raw,'ok');setConn('ready','Terhubung');
-      saveSession({roomCode:raw,myName,hostPeerId:hp,isHost:false});
-      // Jika ini rejoin (game mungkin sudah berjalan), minta sync dari host
-      setTimeout(()=>{if(connections[hp])connections[hp].send({type:'join',name:myName});},1200);
+  connectTimeout=setTimeout(()=>{hideConnecting();if(peer){peer.destroy();peer=null;}showNotif('Timeout — host tidak ditemukan!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);},15000);
+
+  function doJoin(){
+    peer=new Peer('cks-g-'+Math.random().toString(36).substr(2,9),{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
+    peer.on('open',id=>{
+      myId=id;document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host...';
+      const conn=peer.connect(hp,{reliable:true});
+      const ht=setTimeout(()=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Host tidak ditemukan!','err');setConn('error','Tidak ditemukan');if(peer){peer.destroy();peer=null;}setTimeout(initIdlePeer,300);},10000);
+      conn.on('open',()=>{
+        clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();
+        connections[hp]=conn;hostId=hp;roomCode=raw;
+        conn.on('data',d=>onMsg(d,conn.peer));conn.on('close',()=>onDisc(conn.peer));
+        conn.send({type:'join',name:myName});showRoomPanel(raw);
+        showNotif('Berhasil gabung '+raw,'ok');setConn('ready','Terhubung');
+        saveSession({roomCode:raw,myName,hostPeerId:hp,isHost:false});
+        // Rejoin: kirim ulang join setelah koneksi stabil jika game sudah berjalan
+        setTimeout(()=>{if(connections[hp])connections[hp].send({type:'join',name:myName});},1200);
+      });
+      conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek ke host!','err');setConn('error','Gagal');if(peer){peer.destroy();peer=null;}setTimeout(initIdlePeer,300);});
     });
-    conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek!','err');setConn('error','Gagal');});
-  });
-  peer.on('error',err=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');});
+    peer.on('error',err=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');if(peer){peer.destroy();peer=null;}setTimeout(initIdlePeer,300);});
+  }
+
+  // Destroy peer lama dengan bersih sebelum buat baru
+  if(peer){
+    try{peer.destroy();}catch(e){}
+    peer=null;
+    setTimeout(doJoin,150);
+  } else {
+    doJoin();
+  }
 }
 function resumeSession(){
   const s=loadSession();if(!s)return;
