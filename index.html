@@ -507,24 +507,6 @@ async function fetchRoomList(){
     el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';
   }
 }
-async function fetchRoomList(){
-  const el=document.getElementById('roomList');
-  el.innerHTML='<div class="room-empty" style="color:rgba(240,234,216,.3)">Memuat...</div>';
-  try{
-    const r=await fetch(BIN_API+'/'+_binId+'/latest',{headers:{'X-Master-Key':BIN_KEY,'X-Access-Key':BIN_KEY},cache:'no-cache'});
-    if(!r.ok){
-      // Bin mungkin belum ada, coba buat
-      if(r.status===404||r.status===400){
-        const cr=await fetch(BIN_API,{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':BIN_KEY,'X-Bin-Name':'cks-shared','X-Bin-Private':'false','X-Bin-Id':SHARED_BIN_ID},body:JSON.stringify({_init:true})});
-        if(cr.ok){const d=await cr.json();_binId=d.metadata?.id||SHARED_BIN_ID;}
-      }
-      el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';return;
-    }
-    const d=await r.json();roomReg=d.record||{};renderRoomList();
-  }catch(e){
-    el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';
-  }
-}
 async function regRoom(code,hostName,n){
   const ok=await ensureBin();if(!ok)return;
   const now=Date.now();
@@ -615,11 +597,22 @@ function onMsg(data,from){
         showNotif(existByName.name+' masuk kembali!','ok');sysmsg(existByName.name+' terhubung kembali');
       }else if(!existById){players.push({id:from,name:data.name,rank:null,cardCount:0});}
       else{existById.name=data.name;}
-      if(!connections[from]){const c=peer.connect(from,{reliable:true});setupConn(c);}
-      broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
-      renderLobbyPlayers();updateReg(roomCode,players.length,gs.started);
-      if(gs.started)sendTo(from,{type:'gameSync',gs});
-      if(chatHistory.length)sendTo(from,{type:'chatHist',msgs:chatHistory.slice(-50)});}
+      if(!connections[from]){
+        const c=peer.connect(from,{reliable:true});
+        setupConn(c);
+        // Tunggu koneksi balik open sebelum kirim sync — jangan langsung sendTo
+        c.on('open',()=>{
+          broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
+          renderLobbyPlayers();updateReg(roomCode,players.length,gs.started);
+          if(gs.started)c.send({type:'gameSync',gs});
+          if(chatHistory.length)c.send({type:'chatHist',msgs:chatHistory.slice(-50)});
+        });
+      } else {
+        broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
+        renderLobbyPlayers();updateReg(roomCode,players.length,gs.started);
+        if(gs.started)sendTo(from,{type:'gameSync',gs});
+        if(chatHistory.length)sendTo(from,{type:'chatHist',msgs:chatHistory.slice(-50)});
+      }}
       break;
 
     case 'denied':
@@ -781,14 +774,24 @@ function joinRoom(){
   isHost=false;const hp='cks-'+raw;
 
   showConn('Menghubungkan','Mencari ruangan <strong style="color:var(--gold-l)">'+raw+'</strong>...');
-  connectTimeout=setTimeout(()=>{hideConnecting();if(peer){peer.destroy();peer=null;}showNotif('Timeout — host tidak ditemukan!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);},15000);
 
   function doJoin(){
+    // Reset dan mulai timeout dari sini (setelah peer lama benar-benar destroyed)
+    clearTimeout(connectTimeout);
+    connectTimeout=setTimeout(()=>{
+      hideConnecting();if(peer){try{peer.destroy();}catch(e){}peer=null;}
+      showNotif('Timeout — coba lagi!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);
+    },20000);
+
     peer=new Peer('cks-g-'+Math.random().toString(36).substr(2,9),{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
     peer.on('open',id=>{
       myId=id;document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host...';
       const conn=peer.connect(hp,{reliable:true});
-      const ht=setTimeout(()=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Host tidak ditemukan!','err');setConn('error','Tidak ditemukan');if(peer){peer.destroy();peer=null;}setTimeout(initIdlePeer,300);},10000);
+      const ht=setTimeout(()=>{
+        clearTimeout(connectTimeout);hideConnecting();
+        showNotif('Host tidak ditemukan — pastikan host masih online','err');
+        setConn('error','Tidak ditemukan');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);
+      },15000);
       conn.on('open',()=>{
         clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();
         connections[hp]=conn;hostId=hp;roomCode=raw;
@@ -799,16 +802,16 @@ function joinRoom(){
         // Rejoin: kirim ulang join setelah koneksi stabil jika game sudah berjalan
         setTimeout(()=>{if(connections[hp])connections[hp].send({type:'join',name:myName});},1200);
       });
-      conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek ke host!','err');setConn('error','Gagal');if(peer){peer.destroy();peer=null;}setTimeout(initIdlePeer,300);});
+      conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek ke host!','err');setConn('error','Gagal');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);});
     });
-    peer.on('error',err=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');if(peer){peer.destroy();peer=null;}setTimeout(initIdlePeer,300);});
+    peer.on('error',err=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);});
   }
 
   // Destroy peer lama dengan bersih sebelum buat baru
   if(peer){
     try{peer.destroy();}catch(e){}
     peer=null;
-    setTimeout(doJoin,150);
+    setTimeout(doJoin,200);
   } else {
     doJoin();
   }
