@@ -458,28 +458,24 @@ const loadSession=()=>{try{const s=localStorage.getItem(SK);return s?JSON.parse(
 const clearSession=()=>{localStorage.removeItem(SK);document.getElementById('sessionBanner').style.display='none';};
 
 /* ═══════ ROOM REGISTRY ═══════
-   Menggunakan jsonbin.io — auto-create bin jika belum ada.
-   binId disimpan di localStorage dan di-share lewat URL hash.
+   Menggunakan jsonblob.com — gratis, tanpa API key, publik.
+   Blob ID disimpan di localStorage dan di-share via URL hash.
 ════════════════════════════════════════════ */
-const BIN_API='https://api.jsonbin.io/v3/b';
-const BIN_KEY='$2b$10$2Ot1GXHDiGF4d9rUZRIXHuKGEjLHFdV4jS5JbU7TJm6sQwnkQVWmm';
-const BIN_LS='cks_binid';
+const BLOB_API='https://jsonblob.com/api/jsonBlob';
+const BIN_LS='cks_blobid_v2';
 let roomReg={};
 let _binId=null;
 
 function getBinId(){
-  // Priority: URL hash → localStorage → null
-  const h=new URLSearchParams(location.hash.slice(1)).get('bin');
+  const h=new URLSearchParams(location.hash.slice(1)).get('blob');
   if(h){try{localStorage.setItem(BIN_LS,h);}catch(e){}return h;}
   try{return localStorage.getItem(BIN_LS)||null;}catch(e){return null;}
 }
 function setBinId(id){
   _binId=id;
   try{localStorage.setItem(BIN_LS,id);}catch(e){}
-  // Update URL hash silently
-  const u=new URL(location.href);u.hash='bin='+id;
+  const u=new URL(location.href);u.hash='blob='+id;
   history.replaceState(null,'',u.toString());
-  // Show share hint in lobby
   const el=document.getElementById('binHint');
   if(el){el.style.display='block';const su=document.getElementById('binShareUrl');if(su)su.textContent=location.href;}
 }
@@ -487,24 +483,46 @@ async function ensureBin(){
   if(_binId)return true;
   const id=getBinId();
   if(id){_binId=id;return true;}
-  // Create new bin
+  // Buat blob baru
   try{
-    const r=await fetch(BIN_API,{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':BIN_KEY,'X-Bin-Name':'cks-lobby','X-Bin-Private':'false'},body:JSON.stringify({_init:true})});
+    const r=await fetch(BLOB_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({_init:true})});
     if(!r.ok)return false;
-    const d=await r.json();setBinId(d.metadata.id);return true;
+    // jsonblob mengembalikan ID di header Location: https://jsonblob.com/api/jsonBlob/<ID>
+    const loc=r.headers.get('Location')||'';
+    const newId=loc.split('/').pop();
+    if(!newId)return false;
+    setBinId(newId);return true;
   }catch(e){return false;}
 }
 async function fetchRoomList(){
   const el=document.getElementById('roomList');
   el.innerHTML='<div class="room-empty" style="color:rgba(240,234,216,.3)">Memuat...</div>';
   const ok=await ensureBin();
-  if(!ok){el.innerHTML='<div class="room-empty">Tidak dapat memuat daftar.<br><span style="font-size:.7rem;opacity:.6">Gunakan kode ruangan untuk bergabung.</span></div>';return;}
+  if(!ok){el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';return;}
   try{
-    const r=await fetch(BIN_API+'/'+_binId+'/latest',{headers:{'X-Master-Key':BIN_KEY},cache:'no-cache'});
+    const r=await fetch(BLOB_API+'/'+_binId,{headers:{'Accept':'application/json'},cache:'no-cache'});
     if(!r.ok)throw 0;
+    const d=await r.json();roomReg=(d&&!d._init)?d:{};renderRoomList();
+  }catch(e){
+    el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';
+  }
+}
+async function fetchRoomList(){
+  const el=document.getElementById('roomList');
+  el.innerHTML='<div class="room-empty" style="color:rgba(240,234,216,.3)">Memuat...</div>';
+  try{
+    const r=await fetch(BIN_API+'/'+_binId+'/latest',{headers:{'X-Master-Key':BIN_KEY,'X-Access-Key':BIN_KEY},cache:'no-cache'});
+    if(!r.ok){
+      // Bin mungkin belum ada, coba buat
+      if(r.status===404||r.status===400){
+        const cr=await fetch(BIN_API,{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':BIN_KEY,'X-Bin-Name':'cks-shared','X-Bin-Private':'false','X-Bin-Id':SHARED_BIN_ID},body:JSON.stringify({_init:true})});
+        if(cr.ok){const d=await cr.json();_binId=d.metadata?.id||SHARED_BIN_ID;}
+      }
+      el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';return;
+    }
     const d=await r.json();roomReg=d.record||{};renderRoomList();
   }catch(e){
-    el.innerHTML='<div class="room-empty">Tidak dapat memuat daftar.<br><span style="font-size:.7rem;opacity:.6">Gunakan kode ruangan untuk bergabung.</span></div>';
+    el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';
   }
 }
 async function regRoom(code,hostName,n){
@@ -512,17 +530,17 @@ async function regRoom(code,hostName,n){
   const now=Date.now();
   Object.keys(roomReg).forEach(k=>{if(now-roomReg[k].ts>1800000)delete roomReg[k];});
   roomReg[code]={hostName,players:n,started:false,ts:now};
-  try{await fetch(BIN_API+'/'+_binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':BIN_KEY},body:JSON.stringify(roomReg)});}catch(e){}
+  try{await fetch(BLOB_API+'/'+_binId,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(roomReg)});}catch(e){}
 }
 async function updateReg(code,n,started){
   if(!_binId||!roomReg[code])return;
   roomReg[code].players=n;roomReg[code].started=started;roomReg[code].ts=Date.now();
-  try{await fetch(BIN_API+'/'+_binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':BIN_KEY},body:JSON.stringify(roomReg)});}catch(e){}
+  try{await fetch(BLOB_API+'/'+_binId,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(roomReg)});}catch(e){}
 }
 async function unregRoom(code){
   if(!_binId)return;
   delete roomReg[code];
-  try{await fetch(BIN_API+'/'+_binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':BIN_KEY},body:JSON.stringify(roomReg)});}catch(e){}
+  try{await fetch(BLOB_API+'/'+_binId,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(roomReg)});}catch(e){}
 }
 function renderRoomList(){
   const el=document.getElementById('roomList');const now=Date.now();
@@ -625,8 +643,8 @@ function onMsg(data,from){
 
     case 'gameSync':
       gs=data.gs;if(gs.hands[myId])myHand=[...gs.hands[myId]];
-      // If game is in progress but we're still on lobby screen (rejoin), transition to game
-      if(gs.started&&document.getElementById('lobby').style.display!=='none'){
+      // If game is in progress but game screen not yet shown (rejoin), transition to game
+      if(gs.started&&document.getElementById('game').style.display==='none'){
         document.getElementById('lobby').style.display='none';
         document.getElementById('game').style.display='flex';
         document.getElementById('exchangePanel').style.display='none';
@@ -775,6 +793,8 @@ function joinRoom(){
       conn.send({type:'join',name:myName});showRoomPanel(raw);
       showNotif('Berhasil gabung '+raw,'ok');setConn('ready','Terhubung');
       saveSession({roomCode:raw,myName,hostPeerId:hp,isHost:false});
+      // Jika ini rejoin (game mungkin sudah berjalan), minta sync dari host
+      setTimeout(()=>{if(connections[hp])connections[hp].send({type:'join',name:myName});},1200);
     });
     conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek!','err');setConn('error','Gagal');});
   });
@@ -1062,7 +1082,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(sess.myName)document.getElementById('playerName').value=sess.myName;
   }
 
-  // Restore bin hint if binId in URL/localStorage
+  // Restore blob ID from URL/localStorage
   const _bInit=getBinId();
   if(_bInit){_binId=_bInit;const el=document.getElementById('binHint');if(el){el.style.display='block';const su=document.getElementById('binShareUrl');if(su)su.textContent=location.href;}}
   initIdlePeer();
