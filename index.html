@@ -1341,7 +1341,7 @@ function showWin(wid){
   document.getElementById('winSub').innerHTML=
     `<div style="font-size:.74rem;color:rgba(240,234,216,.35);margin-bottom:.6rem;letter-spacing:1px;text-transform:uppercase">Hasil Ronde</div>${list}`+
     makeStreakTable(fo);
-  document.getElementById('nextRoundBtn').style.display='none';
+  document.getElementById('nextRoundBtn').style.display=isHost?'block':'none';
   // Update streak badge in header
   renderStreakBadge();
 }
