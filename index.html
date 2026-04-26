@@ -735,6 +735,7 @@ function onMsg(data,from){
       }
       renderGame();renderStreakBadge();if(gs.winner)showWin(gs.winner);
       if(gs.phase==='exchange'||gs.phase==='nextRound')showExchangeUI();
+      else document.getElementById('exchangePanel').style.display='none';
       if(data.notif)showNotif(data.notif[0],data.notif[1]||'');break;
 
     case 'action':
@@ -808,12 +809,12 @@ function endGame(){
   const keys=['king','queen','slave1','slave2'];gs.ranks={};
   gs.finishOrder.forEach((pid,i)=>{gs.ranks[pid]=keys[i]||'slave2';});
   players.forEach(p=>{if(gs.ranks[p.id])p.rank=gs.ranks[p.id];});
-  // Catat streak untuk ronde ini (hanya host yang punya data lengkap)
   updateStreaksForRound(gs.finishOrder);
-  if(gs.playerOrder.length>=3){
-    gs.phase='exchange';gs.exchangeState={s2k:null,kr:null,s1q:null,qr:null};
-    gs.log='Ronde selesai! Fase tukar kartu...';bsync();
-  } else {gs.winner=gs.finishOrder[0];gs.phase='done';gs.log='';bsync();}
+  // Tampilkan hasil ronde dulu, host klik "Ronde Lagi" → startNextRound deal dek baru + exchange
+  gs.winner=gs.finishOrder[0];
+  gs.phase='done';
+  gs.log='Ronde selesai!';
+  bsync();
 }
 function procGive(card,from){
   const role=gs.ranks?.[from];const ex=gs.exchangeState;if(!ex||!role)return;
@@ -852,6 +853,7 @@ function bsync(notif){
   if(gs.hands[myId])myHand=[...gs.hands[myId]];renderGame();
   if(gs.winner)showWin(gs.winner);
   if(gs.phase==='exchange'||gs.phase==='nextRound')showExchangeUI();
+  else document.getElementById('exchangePanel').style.display='none';
   broadcastAll({type:'gameSync',gs,notif:notif||null});
 }
 function kickPlayer(pid){if(!isHost)return;sendTo(pid,{type:'kick',tid:pid});broadcastAll({type:'kick',tid:pid,_r:1});setTimeout(()=>onDisc(pid),400);}
@@ -1245,7 +1247,21 @@ function showExchangeUI(){
   const r=gs.ranks?.[myId];const pan=document.getElementById('exchangePanel');
   const et=document.getElementById('exchangeTitle'),ed=document.getElementById('exchangeDesc'),eb=document.getElementById('exchangeBtn');
   pan.style.display='flex';exchangeMode=null;selCards=[];
-  if(gs.phase==='nextRound'){et.textContent='✅ Tukar Kartu Selesai!';ed.innerHTML='Siap ronde berikutnya!';eb.textContent='▶ Mulai Ronde Berikutnya';eb.onclick=()=>{if(isHost)startNextRound();};eb.style.display=isHost?'block':'none';renderHand();return;}
+  if(gs.phase==='nextRound'){
+    et.textContent='✅ Tukar Kartu Selesai!';
+    ed.innerHTML='Kartu sudah ditukar. Siap bermain!';
+    eb.textContent='▶ Mulai Bermain';
+    eb.onclick=()=>{
+      if(!isHost)return;
+      // Exchange selesai, langsung mulai bermain dengan tangan yang sudah ditukar
+      gs.phase='playing';gs.exchangeState=null;
+      gs.log='Ronde dimulai!';
+      bsync();
+      pan.style.display='none';
+    };
+    eb.style.display=isHost?'block':'none';
+    renderHand();return;
+  }
   if(!r){pan.style.display='none';return;}
   const ex=gs.exchangeState;
   const setUI=(t,d,mode,bt,fn)=>{
