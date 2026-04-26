@@ -1003,6 +1003,7 @@ function startGame(){
 
 /* ═══════ GAME UI ═══════ */
 function beginGameUI(){
+  document.getElementById('winScreen').classList.remove('show');
   document.getElementById('lobby').style.display='none';document.getElementById('game').style.display='flex';
   document.getElementById('exchangePanel').style.display='none';selCards=[];exchangeMode=null;
   document.getElementById('myNameDisp').textContent=players.find(p=>p.id===myId)?.name||'Kamu';
