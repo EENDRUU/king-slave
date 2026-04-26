@@ -714,7 +714,11 @@ function onMsg(data,from){
       break;
 
     case 'gameStart':
-      gs=data.gs;myHand=[...(gs.hands[myId]||[])];beginGameUI();break;
+      gs=data.gs;myHand=[...(gs.hands[myId]||[])];
+      document.getElementById('winScreen').classList.remove('show');
+      beginGameUI();
+      if(gs.phase==='exchange'||gs.phase==='nextRound')showExchangeUI();
+      break;
 
     case 'gameSync':
       gs=data.gs;if(gs.hands[myId])myHand=[...gs.hands[myId]];
@@ -863,7 +867,9 @@ function startNextRound(){
       exchangeState:needExchange?{s2k:null,kr:null,s1q:null,qr:null}:null,
       log:needExchange?'Ronde baru! Tukar kartu dulu...':'Ronde baru!'};
   players.forEach(p=>{p.cardCount=(hands[p.id]||[]).length;});
+  document.getElementById('winScreen').classList.remove('show');
   broadcastAll({type:'gameStart',gs});myHand=[...(gs.hands[myId]||[])];beginGameUI();
+  if(needExchange)showExchangeUI();
 }
 
 /* ═══════ LOBBY ═══════ */
@@ -998,7 +1004,9 @@ function startGame(){
   const ord=players.map(p=>p.id),si=ord.indexOf(starter),ro=[...ord.slice(si),...ord.slice(0,si)];
   gs={hands,currentPlayer:starter,lastPlay:null,skipCount:0,skippedPlayers:[],started:true,playerOrder:ro,firstTurn:true,lastPlayerId:null,winner:null,finishOrder:[],ranks:{},phase:'playing',exchangeState:null,log:'Game dimulai!'};
   players.forEach(p=>{p.cardCount=(hands[p.id]||[]).length;p.rank=null;});
-  broadcastAll({type:'gameStart',gs});myHand=[...(gs.hands[myId]||[])];beginGameUI();updateReg(roomCode,players.length,true);
+  broadcastAll({type:'gameStart',gs});myHand=[...(gs.hands[myId]||[])];
+  document.getElementById('winScreen').classList.remove('show');
+  beginGameUI();updateReg(roomCode,players.length,true);
 }
 
 /* ═══════ GAME UI ═══════ */
