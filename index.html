@@ -163,7 +163,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* WIN */
 #winScreen{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;align-items:center;justify-content:center}
 #winScreen.show{display:flex}
-.win-box{background:linear-gradient(135deg,#142b1e,#0a0f1a);border:2px solid var(--gold);border-radius:20px;padding:1.85rem;text-align:center;max-width:350px;width:90%}
+.win-box{background:linear-gradient(135deg,#142b1e,#0a0f1a);border:2px solid var(--gold);border-radius:20px;padding:1.85rem;text-align:center;max-width:350px;width:90%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:.2rem}
 .win-emoji{font-size:2.8rem;margin-bottom:.55rem}
 .win-title{font-family:'Cinzel',serif;font-size:1.5rem;color:var(--gold);margin-bottom:.35rem}
 .win-sub{color:rgba(240,234,216,.65);margin-bottom:1.4rem;font-size:.86rem}
@@ -809,7 +809,7 @@ function endGame(){
   if(gs.playerOrder.length>=3){
     gs.phase='exchange';gs.exchangeState={s2k:null,kr:null,s1q:null,qr:null};
     gs.log='Ronde selesai! Fase tukar kartu...';bsync();
-  } else {gs.winner=gs.finishOrder[0];gs.phase='done';gs.log='';bsync();showWin(gs.winner);}
+  } else {gs.winner=gs.finishOrder[0];gs.phase='done';gs.log='';bsync();}
 }
 function procGive(card,from){
   const role=gs.ranks?.[from];const ex=gs.exchangeState;if(!ex||!role)return;
