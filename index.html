@@ -208,7 +208,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .streak-chip.neutral{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(240,234,216,.5)}
 .streak-fire{animation:firePop .4s ease}
 @keyframes firePop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
-/* Win screen streak table */
 .streak-table{width:100%;border-collapse:collapse;margin:.5rem 0}
 .streak-table td{padding:.32rem .5rem;font-size:.78rem;border-bottom:1px solid rgba(255,255,255,.05)}
 .streak-table td:first-child{color:rgba(240,234,216,.5);white-space:nowrap}
@@ -221,34 +220,27 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 @keyframes crownBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
 .role-label-badge{font-size:.62rem;font-weight:700;letter-spacing:1px;padding:.12rem .45rem;border-radius:10px;text-transform:uppercase;white-space:nowrap}
 
-/* King */
 .role-king .role-avatar-img{background:radial-gradient(135deg at 30% 30%,#ffe97a,#c9a84c,#7a5c10);box-shadow:0 0 0 2px #c9a84c,0 0 18px rgba(201,168,76,.7),0 0 40px rgba(201,168,76,.3);animation:kingGlow 2s ease-in-out infinite}
 @keyframes kingGlow{0%,100%{box-shadow:0 0 0 2px #c9a84c,0 0 18px rgba(201,168,76,.7),0 0 40px rgba(201,168,76,.3)}50%{box-shadow:0 0 0 3px #ffe97a,0 0 28px rgba(255,233,122,.9),0 0 55px rgba(201,168,76,.5)}}
 .role-king .role-label-badge{background:linear-gradient(135deg,#c9a84c,#ffe97a);color:#3a2000;box-shadow:0 2px 8px rgba(201,168,76,.4)}
 .role-king-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(201,168,76,.4);animation:ringPulse 2s ease-in-out infinite}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.08);opacity:.8}}
 
-/* Queen */
 .role-queen .role-avatar-img{background:radial-gradient(135deg at 30% 30%,#e879f9,#a855f7,#6b21a8);box-shadow:0 0 0 2px #a855f7,0 0 18px rgba(168,85,247,.6),0 0 40px rgba(168,85,247,.25);animation:queenGlow 2.4s ease-in-out infinite}
 @keyframes queenGlow{0%,100%{box-shadow:0 0 0 2px #a855f7,0 0 18px rgba(168,85,247,.6),0 0 40px rgba(168,85,247,.25)}50%{box-shadow:0 0 0 3px #e879f9,0 0 28px rgba(232,121,249,.8),0 0 55px rgba(168,85,247,.4)}}
 .role-queen .role-label-badge{background:linear-gradient(135deg,#a855f7,#e879f9);color:#fff;box-shadow:0 2px 8px rgba(168,85,247,.4)}
-.role-queen-stars{position:absolute;inset:0;border-radius:50%;pointer-events:none;overflow:hidden}
 
-/* Slave 1 */
 .role-slave1 .role-avatar-img{background:radial-gradient(135deg at 30% 30%,#64748b,#475569,#1e293b);box-shadow:0 0 0 2px #64748b,0 0 10px rgba(100,116,139,.35)}
 .role-slave1 .role-label-badge{background:rgba(100,116,139,.3);border:1px solid #64748b;color:#94a3b8}
 .role-chain{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);font-size:.65rem;opacity:.7}
 
-/* Slave 2 */
 .role-slave2 .role-avatar-img{background:radial-gradient(135deg at 30% 30%,#ef4444,#b91c1c,#450a0a);box-shadow:0 0 0 2px #ef4444,0 0 12px rgba(239,68,68,.3);animation:slave2Shake 4s ease-in-out infinite}
 @keyframes slave2Shake{0%,90%,100%{transform:rotate(0)}92%{transform:rotate(-3deg)}94%{transform:rotate(3deg)}96%{transform:rotate(-2deg)}98%{transform:rotate(2deg)}}
 .role-slave2 .role-label-badge{background:rgba(239,68,68,.2);border:1px solid #ef4444;color:#fca5a5}
 
-/* Opp zone with role */
 .opp-zone.has-role{position:relative}
 .opp-role-frame{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:.22rem}
 
-/* My zone role banner */
 .my-role-banner{display:none;align-items:center;gap:.6rem;padding:.42rem .75rem;border-radius:10px;margin-bottom:.38rem;border:1px solid transparent}
 .my-role-banner.show{display:flex}
 .my-role-banner.king{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.4)}
@@ -258,9 +250,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .my-role-banner-icon{font-size:1.6rem;line-height:1}
 .my-role-banner-text strong{display:block;font-size:.88rem;font-weight:700}
 .my-role-banner-text span{font-size:.72rem;opacity:.65;line-height:1.4}
-
-/* Particle stars for queen */
-@keyframes starFloat{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-30px) rotate(180deg);opacity:0}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -277,7 +266,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="suits">♠ ♥ ♣ ♦</div>
   </div>
 
-  <!-- Session banner -->
   <div id="sessionBanner" class="session-banner" style="display:none" onclick="resumeSession()">
     <div style="font-size:1.3rem">🔄</div>
     <div class="session-text">
@@ -307,7 +295,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="btn btn-outline" onclick="joinRoom()">Gabung via Kode</button>
     <div style="text-align:center;font-size:.68rem;color:rgba(240,234,216,.22);margin-top:.4rem">Maks 4 pemain per ruangan</div>
 
-    <!-- Room panel after create/join -->
     <div id="roomPanel" style="display:none;margin-top:1.1rem">
       <div style="font-size:.7rem;color:rgba(240,234,216,.42);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.38rem">Kode Ruangan (klik untuk copy)</div>
       <div id="roomCodeDisplay" class="room-box" onclick="copyRoomCode()">—</div>
@@ -321,7 +308,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
 
-  <!-- Available rooms -->
   <div class="room-list-wrap">
     <div id="binHint" style="display:none;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:8px;padding:.5rem .75rem;font-size:.73rem;color:rgba(240,234,216,.6);margin-bottom:.5rem;text-align:center;line-height:1.55">
       📎 Bagikan URL ini agar teman bisa melihat daftar ruangan:<br>
@@ -391,7 +377,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
 </div>
-</div><!-- #app -->
+</div>
 
 <!-- CHAT PANEL -->
 <div id="chatPanel">
@@ -466,11 +452,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <span class="rank-pill top">👑 King — 1st selesai</span><span class="rank-pill top">👸 Queen — 2nd</span>
       <span class="rank-pill">⛓️ Slave 1 — 3rd</span><span class="rank-pill" style="color:var(--error)">😢 Slave 2 — Terakhir</span>
     </div>
-    <h4>Tukar Kartu (setelah ronde)</h4>
-    <ul>
-      <li><strong>Slave 2 → King:</strong> beri kartu tertinggi. King kembalikan kartu bebas.</li>
-      <li><strong>Slave 1 → Queen:</strong> beri kartu tertinggi. Queen kembalikan kartu bebas.</li>
-    </ul>
     <h4>Aturan Umum</h4>
     <ul>
       <li>Pemain dengan <strong>3♦</strong> memulai (wajib sertakan 3♦ di giliran pertama)</li>
@@ -533,10 +514,7 @@ const clearSession=()=>{localStorage.removeItem(SK);document.getElementById('ses
 const savePlayerName=n=>{try{localStorage.setItem(NAME_LS,n);}catch(e){}};
 const loadPlayerName=()=>{try{return localStorage.getItem(NAME_LS)||'';}catch(e){return '';}};
 
-/* ═══════ ROOM REGISTRY ═══════
-   Menggunakan JSONKeeper — gratis, no-auth, CORS-friendly.
-   Blob ID di-share via URL hash sehingga semua pemain pakai store yang sama.
-════════════════════════════════════════════ */
+/* ═══════ ROOM REGISTRY ═══════ */
 const JKAPI='https://jsonkeeper.com/b';
 const BIN_LS='cks_jkid_v3';
 let roomReg={};
@@ -572,19 +550,14 @@ async function fetchRoomList(){
   const el=document.getElementById('roomList');
   el.innerHTML='<div class="room-empty" style="color:rgba(240,234,216,.3)">Memuat...</div>';
   const ok=await ensureBin();
-  if(!ok){
-    el.innerHTML='<div class="room-empty">Bagikan link ke teman untuk melihat ruangan.<br><span style="font-size:.7rem;opacity:.6">Atau masukkan kode langsung.</span></div>';
-    return;
-  }
+  if(!ok){el.innerHTML='<div class="room-empty">Bagikan link ke teman.<br><span style="font-size:.7rem;opacity:.6">Atau masukkan kode langsung.</span></div>';return;}
   try{
     const r=await fetch(JKAPI+'/'+_binId,{cache:'no-cache'});
     if(!r.ok)throw 0;
     const d=await r.json();
     roomReg=(d&&typeof d==='object'&&!d._init)?d:{};
     renderRoomList();
-  }catch(e){
-    el.innerHTML='<div class="room-empty">Belum ada ruangan.<br><span style="font-size:.7rem;opacity:.6">Buat ruangan atau masukkan kode.</span></div>';
-  }
+  }catch(e){el.innerHTML='<div class="room-empty">Belum ada ruangan.</div>';}
 }
 async function regRoom(code,hostName,n){
   const ok=await ensureBin();if(!ok)return;
@@ -606,7 +579,7 @@ async function unregRoom(code){
 function renderRoomList(){
   const el=document.getElementById('roomList');const now=Date.now();
   const active=Object.entries(roomReg).filter(([,v])=>now-v.ts<1800000).sort((a,b)=>b[1].ts-a[1].ts);
-  if(!active.length){el.innerHTML='<div class="room-empty">Belum ada ruangan terbuka.<br><span style="font-size:.7rem;opacity:.6">Jadilah yang pertama membuat ruangan!</span></div>';return;}
+  if(!active.length){el.innerHTML='<div class="room-empty">Belum ada ruangan terbuka.<br><span style="font-size:.7rem;opacity:.6">Jadilah yang pertama!</span></div>';return;}
   el.innerHTML=active.map(([code,info])=>{
     const full=info.players>=4,started=info.started,joinable=!full&&!started;
     return `<div class="room-card${!joinable?' room-card-disabled':''}" ${joinable?`onclick="quickJoin('${code}')"`:''}>
@@ -625,44 +598,160 @@ function quickJoin(code){
   document.getElementById('joinCode').value=code;joinRoom();
 }
 
-/* ═══════ NETWORKING ═══════ */
+/* ═══════════════════════════════════════════════════
+   NETWORKING  — FIX UTAMA ADA DI SINI
+   Bug asal:
+   1. connectTimeout di-clear sebelum waktunya → inner ht timeout yang salah satu dari keduanya pasti trigger duluan
+   2. peer.reconnect() bisa ubah peer ID → host tidak ditemukan saat rejoin
+   3. peer.destroy() tidak await → peer baru dibuat sebelum peer lama benar-benar mati → konflik ID
+   4. Timeout join host terlalu pendek (15s) setelah peer open, padahal open sendiri bisa butuh ~5s
+   ═══════════════════════════════════════════════════ */
 let peer=null,myId='',myName='';
 let connections={};
 let players=[];
 let isHost=false,hostId='',roomCode='';
 const MAX_P=4;
 
-function initPeer(asHost,code,forcedId){
-  const pid=forcedId||(asHost?'cks-'+code:'cks-g-'+Math.random().toString(36).substr(2,9));
-  peer=new Peer(pid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
+/* ── FIX 1: Satu fungsi destroyPeer yang benar-benar bersih ── */
+function destroyPeer(cb){
+  if(!peer){cb&&cb();return;}
+  const p=peer;peer=null;
+  try{
+    p.removeAllListeners&&p.removeAllListeners();
+    p.destroy();
+  }catch(e){}
+  // Beri waktu 400ms agar socket PeerJS benar-benar tertutup sebelum buat peer baru
+  setTimeout(()=>cb&&cb(),400);
+}
+
+/* ── FIX 2: initHostPeer — host selalu pakai peer ID tetap = 'cks-KODE' ── */
+function initHostPeer(code){
+  const pid='cks-'+code;
+  peer=new Peer(pid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
+    config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});
+
+  const openTimeout=setTimeout(()=>{
+    hideConnecting();showNotif('Timeout membuat ruangan — coba lagi','err');
+    setConn('error','Timeout');destroyPeer(()=>initIdlePeer());
+  },18000);
+
   peer.on('open',id=>{
-    clearTimeout(connectTimeout);hideConnecting();myId=id;
-    setConn('ready','Siap');document.getElementById('createBtn').disabled=false;
-    if(asHost){roomCode=code;showRoomPanel(code);}
+    clearTimeout(openTimeout);clearTimeout(connectTimeout);
+    myId=id;setConn('ready','Siap');
+    document.getElementById('createBtn').disabled=false;
+    roomCode=code;showRoomPanel(code);hideConnecting();
   });
+
   peer.on('connection',conn=>setupConn(conn));
-  peer.on('error',err=>{
-    clearTimeout(connectTimeout);hideConnecting();
-    if((asHost||forcedId)&&err.type==='unavailable-id'){peer.destroy();initPeer(asHost,code);return;}
-    setConn('error','Error');showNotif('Error: '+err.type,'err');
-  });
+
+  /* FIX 3: host JANGAN pakai peer.reconnect() — cukup destroy + buat ulang peer dengan ID yang sama */
   peer.on('disconnected',()=>{
     setConn('connecting','Terputus...');
-    // Jangan pakai peer.reconnect() — bisa ganti ID. Paksa pakai ID yang sama.
-    if(asHost||forcedId){
-      setTimeout(()=>{if(peer)peer.destroy();peer=null;initPeer(asHost,code,asHost?'cks-'+code:forcedId);},800);
-    } else {
-      peer.reconnect();
+    if(!peer)return;// sudah di-destroy oleh proses lain
+    // Coba reconnect manual ke signaling server, bukan peer.reconnect()
+    try{peer.reconnect();}catch(e){
+      // Jika reconnect gagal, buat ulang peer baru dengan ID yang sama
+      destroyPeer(()=>initHostPeer(code));
     }
   });
+
+  peer.on('error',err=>{
+    clearTimeout(openTimeout);clearTimeout(connectTimeout);
+    if(err.type==='unavailable-id'){
+      // ID sudah dipakai — tunggu sebentar lalu coba lagi
+      hideConnecting();
+      showNotif('Kode sudah ada — mencoba bergabung kembali...','warn');
+      destroyPeer(()=>setTimeout(()=>initHostPeer(code),1500));
+      return;
+    }
+    if(err.type==='network'||err.type==='server-error'||err.type==='socket-error'){
+      // Error jaringan sementara — coba reconnect
+      setConn('connecting','Reconnect...');
+      setTimeout(()=>{if(!peer)destroyPeer(()=>initHostPeer(code));},2000);
+      return;
+    }
+    hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');
+  });
 }
+
+/* ── FIX 4: initGuestPeer — guest pakai ID acak, timeout join lebih panjang ── */
+function initGuestPeer(targetCode,onConnected,onFailed){
+  const gid='cks-g-'+Math.random().toString(36).substr(2,9);
+  peer=new Peer(gid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
+    config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});
+
+  const hostPeerId='cks-'+targetCode;
+
+  const peerOpenTimeout=setTimeout(()=>{
+    hideConnecting();showNotif('Tidak bisa konek ke server PeerJS','err');
+    setConn('error','Timeout');destroyPeer(()=>initIdlePeer());
+    onFailed&&onFailed('peer-timeout');
+  },18000);
+
+  peer.on('open',id=>{
+    clearTimeout(peerOpenTimeout);
+    myId=id;
+    document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host <strong style="color:var(--gold-l)">'+targetCode+'</strong>...';
+
+    const conn=peer.connect(hostPeerId,{reliable:true,serialization:'json'});
+
+    // FIX 5: timeout host dihitung SETELAH peer open, bukan sebelumnya
+    const hostTimeout=setTimeout(()=>{
+      hideConnecting();
+      showNotif('Host tidak ditemukan — pastikan host online dan kode benar','err');
+      setConn('error','Tidak ditemukan');
+      destroyPeer(()=>initIdlePeer());
+      onFailed&&onFailed('host-timeout');
+    },20000);// 20 detik setelah peer open
+
+    conn.on('open',()=>{
+      clearTimeout(hostTimeout);clearTimeout(connectTimeout);
+      hideConnecting();
+      connections[hostPeerId]=conn;hostId=hostPeerId;roomCode=targetCode;
+      conn.on('data',d=>onMsg(d,conn.peer));
+      conn.on('close',()=>onDisc(conn.peer));
+      conn.on('error',()=>onDisc(conn.peer));
+      conn.send({type:'join',name:myName});
+      showRoomPanel(targetCode);
+      showNotif('Berhasil gabung '+targetCode,'ok');setConn('ready','Terhubung');
+      saveSession({roomCode:targetCode,myName,hostPeerId,isHost:false});
+      // FIX 6: kirim join kedua kali setelah 1.5 detik untuk antisipasi race condition di host
+      setTimeout(()=>{if(connections[hostPeerId])connections[hostPeerId].send({type:'join',name:myName});},1500);
+      onConnected&&onConnected();
+    });
+
+    conn.on('error',e=>{
+      clearTimeout(hostTimeout);clearTimeout(connectTimeout);hideConnecting();
+      showNotif('Gagal konek ke host! ('+e.type+')','err');
+      setConn('error','Gagal');destroyPeer(()=>initIdlePeer());
+      onFailed&&onFailed('conn-error');
+    });
+  });
+
+  peer.on('error',err=>{
+    clearTimeout(peerOpenTimeout);clearTimeout(connectTimeout);hideConnecting();
+    showNotif('Error PeerJS: '+err.type,'err');setConn('error','Error');
+    destroyPeer(()=>initIdlePeer());onFailed&&onFailed(err.type);
+  });
+
+  // Guest: saat disconnect, reconnect ke signaling server (ID tidak berubah karena kita buat peer baru)
+  peer.on('disconnected',()=>{
+    setConn('connecting','Terputus...');
+    if(peer){try{peer.reconnect();}catch(e){}}
+  });
+}
+
 function setupConn(conn){
-  conn.on('open',()=>{connections[conn.peer]=conn;conn.on('data',d=>onMsg(d,conn.peer));conn.on('close',()=>onDisc(conn.peer));});
+  conn.on('open',()=>{
+    connections[conn.peer]=conn;
+    conn.on('data',d=>onMsg(d,conn.peer));
+    conn.on('close',()=>onDisc(conn.peer));
+    conn.on('error',()=>onDisc(conn.peer));
+  });
   conn.on('error',()=>onDisc(conn.peer));
 }
 
 function onMsg(data,from){
-  // Host relays to all others
   if(isHost&&!data._r){const fwd={...data,_r:1};Object.entries(connections).forEach(([p,c])=>{if(p!==from)try{c.send(fwd)}catch(e){}});}
 
   switch(data.type){
@@ -670,7 +759,6 @@ function onMsg(data,from){
       if(!isHost)break;
       {const existById=players.find(p=>p.id===from);
       const existByName=!existById&&players.find(p=>p.name===data.name);
-      // Tolak hanya jika game sedang berjalan DAN pemain ini benar-benar orang baru (bukan rejoin)
       if(gs.started&&!existById&&!existByName){sendTo(from,{type:'denied',msg:'Game sudah dimulai'});break;}
       if(!gs.started&&players.length>=MAX_P&&!existById&&!existByName){sendTo(from,{type:'denied',msg:'Ruangan penuh (maks 4)'});break;}
       if(existByName){
@@ -686,10 +774,9 @@ function onMsg(data,from){
       }else if(!existById){
         players.push({id:from,name:data.name,rank:null,cardCount:0});
       }else{existById.name=data.name;existById.disconnected=false;}
-      // Hapus entry pending jika ada
       const pi=players.findIndex(p=>p.id==='(pending)');if(pi>=0)players.splice(pi,1);
       if(!connections[from]){
-        const c=peer.connect(from,{reliable:true});
+        const c=peer.connect(from,{reliable:true,serialization:'json'});
         setupConn(c);
         c.on('open',()=>{
           broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
@@ -713,12 +800,10 @@ function onMsg(data,from){
       if(data.roomCode)roomCode=data.roomCode;
       renderLobbyPlayers();
       if(!players.find(p=>p.id===myId))sendTo(hostId,{type:'join',name:myName});
-      // If game already started (rejoin) and we're on lobby, game screen will be
-      // triggered by subsequent gameSync — nothing to do here.
       break;
 
     case 'kick':
-      if(data.tid===myId){showNotif('Kamu di-kick oleh Host!','err');if(peer){peer.destroy();peer=null;}clearSession();setTimeout(()=>{document.getElementById('roomPanel').style.display='none';initIdlePeer();},1500);}
+      if(data.tid===myId){showNotif('Kamu di-kick oleh Host!','err');destroyPeer(()=>{clearSession();document.getElementById('roomPanel').style.display='none';initIdlePeer();});}
       break;
 
     case 'gameStart':
@@ -730,9 +815,7 @@ function onMsg(data,from){
 
     case 'gameSync':
       gs=data.gs;if(gs.hands[myId])myHand=[...gs.hands[myId]];
-      // Sync title data dari host ke client
       if(gs.titleSnap){Object.entries(gs.titleSnap).forEach(([name,d])=>{if(!titleData[name])titleData[name]={wins:0,losses:0,asKing:0,asQueen:0,asSlave1:0,asSlave2:0,winStreak:0,loseStreak:0,maxWinStreak:0,maxLoseStreak:0,slaveStreak:0,kingStreak:0,total:0,titles:[]};Object.assign(titleData[name],d);});saveTitles();}
-      // If game is in progress but game screen not yet shown (rejoin), transition to game
       if(gs.started&&document.getElementById('game').style.display==='none'){
         document.getElementById('lobby').style.display='none';
         document.getElementById('game').style.display='flex';
@@ -750,7 +833,6 @@ function onMsg(data,from){
       if(isHost){if(data.act==='play')hostPlay(from,data.cards);else if(data.act==='skip')hostSkip(from);}break;
     case 'exGive':if(isHost)procGive(data.card,from);break;
     case 'exReturn':if(isHost)procReturn(data.card,from);break;
-
     case 'chat':if(isHost){Object.entries(connections).forEach(([p,c])=>{if(p!==from)try{c.send({...data,_r:1})}catch(e){}});}recvChat(data);break;
     case 'chatHist':if(data.msgs)data.msgs.forEach(m=>recvChat(m,true));break;
   }
@@ -759,7 +841,6 @@ function onMsg(data,from){
 function onDisc(pid){
   delete connections[pid];
   const p=players.find(x=>x.id===pid);
-  // Jika game sudah mulai, tandai disconnected saja (jangan hapus) agar bisa rejoin
   if(gs.started&&isHost&&p){
     p.disconnected=true;
     showNotif(p.name+' terputus — bisa masuk kembali','warn');sysmsg(p.name+' terputus');
@@ -776,7 +857,6 @@ const sendTo=(pid,d)=>{if(connections[pid])try{connections[pid].send(d)}catch(e)
 /* ═══════ HOST GAME LOGIC ═══════ */
 function hostPlay(from,cards){
   if(gs.currentPlayer!==from||gs.phase!=='playing')return;
-  // Cek apakah player sudah skip di putaran ini
   if(!gs.skippedPlayers)gs.skippedPlayers=[];
   if(gs.skippedPlayers.includes(from)){sendTo(from,{type:'gameSync',gs,notif:['Kamu sudah skip — tunggu putaran baru!','err']});return;}
   const combo=getCombo(cards);
@@ -798,17 +878,14 @@ function hostPlay(from,cards){
 function hostSkip(from){
   if(gs.currentPlayer!==from||gs.firstTurn||gs.phase!=='playing')return;
   if(!gs.skippedPlayers)gs.skippedPlayers=[];
-  // Tandai player ini sudah skip di putaran ini
   if(!gs.skippedPlayers.includes(from))gs.skippedPlayers.push(from);
   gs.skipCount++;const act=gs.playerOrder.filter(id=>(gs.hands[id]||[]).length>0);
   const pp=players.find(p=>p.id===from);gs.log=(pp?.name||'?')+' skip';
   if(gs.skipCount>=act.length-1){
-    // Semua skip — player dengan kartu tertinggi (lastPlayerId) mulai putaran baru
     const w=gs.lastPlayerId||nextActive(from);
-    gs.lastPlay=null;gs.skipCount=0;gs.skippedPlayers=[];// Reset — putaran baru dimulai
+    gs.lastPlay=null;gs.skipCount=0;gs.skippedPlayers=[];
     gs.currentPlayer=w;gs.log='Semua skip — '+(players.find(p=>p.id===w)?.name||'?')+' mulai putaran baru!';
   } else {
-    // Skip ke player berikutnya, lewati yang sudah skip
     gs.currentPlayer=nextActiveNotSkipped(from);
   }
   bsync();
@@ -819,16 +896,13 @@ function endGame(){
   players.forEach(p=>{if(gs.ranks[p.id])p.rank=gs.ranks[p.id];});
   updateTitlesForRound(gs.finishOrder);
   logMatchToFirebase(gs.finishOrder);
-  gs.winner=gs.finishOrder[0];
-  gs.phase='done';
-  gs.log='Ronde selesai!';
+  gs.winner=gs.finishOrder[0];gs.phase='done';gs.log='Ronde selesai!';
   bsync();
 }
 function procGive(card,from){
   const role=gs.ranks?.[from];const ex=gs.exchangeState;if(!ex||!role)return;
   const doGive=(targetRole,exKey)=>{
     const targetId=Object.keys(gs.ranks).find(id=>gs.ranks[id]===targetRole);if(!targetId)return;
-    // Cari kartu tertinggi dari tangan slave saat ini (dari dek baru)
     const h=[...(gs.hands[from]||[])].sort((a,b)=>cardPow(a)-cardPow(b));
     const hi=h[h.length-1];
     if(!hi){sendTo(from,{type:'gameSync',gs,notif:['Tidak ada kartu!','err']});return;}
@@ -870,7 +944,6 @@ function startNextRound(){
   gs.playerOrder.forEach((pid,i)=>{hands[pid]=deck.slice(i*e,(i+1)*e);});
   let starter=gs.playerOrder[0];for(const[pid,c]of Object.entries(hands)){if(c.find(x=>x.rank==='3'&&x.suit==='♦')){starter=pid;break;}}
   const ord=gs.playerOrder,si=ord.indexOf(starter),ro=[...ord.slice(si),...ord.slice(0,si)],pr={...gs.ranks};
-  // Bagikan dek baru, lalu masuk fase exchange (kartu yang ditukar = dari dek baru)
   const needExchange=n>=3&&Object.keys(pr).length>0;
   gs={hands,currentPlayer:starter,lastPlay:null,skipCount:0,skippedPlayers:[],started:true,playerOrder:ro,firstTurn:true,lastPlayerId:null,winner:null,finishOrder:[],ranks:pr,
       phase:needExchange?'exchange':'playing',
@@ -885,105 +958,85 @@ function startNextRound(){
 /* ═══════ LOBBY ═══════ */
 const genCode=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<6;i++)r+=c[Math.floor(Math.random()*c.length)];return r;};
 
+let connectTimeout=null;
+
 function createRoom(existingCode){
   myName=document.getElementById('playerName').value.trim()||document.getElementById('playerName').placeholder;
   savePlayerName(myName);
-  if(peer){try{peer.destroy();}catch(e){}peer=null;}
   isHost=true;const code=existingCode||genCode();
   players=[{id:'(pending)',name:myName,rank:null,cardCount:0}];
-  showConn('Membuat Ruangan','Mendaftarkan ke server...');
-  connectTimeout=setTimeout(()=>{hideConnecting();showNotif('Gagal buat ruangan!','err');setConn('error','Timeout');isHost=false;setTimeout(initIdlePeer,300);},15000);
-  initPeer(true,code);
+  showConn('Membuat Ruangan','Mendaftarkan ke server PeerJS...');
+  // FIX 7: destroy peer lama dulu, baru buat host peer
+  destroyPeer(()=>initHostPeer(code));
 }
+
 function joinRoom(){
   const raw=document.getElementById('joinCode').value.trim().toUpperCase();
   if(raw.length<4){showNotif('Kode minimal 4 karakter!','err');return;}
   myName=document.getElementById('playerName').value.trim()||document.getElementById('playerName').placeholder;
   savePlayerName(myName);
-  isHost=false;const hp='cks-'+raw;
-
+  isHost=false;
   showConn('Menghubungkan','Mencari ruangan <strong style="color:var(--gold-l)">'+raw+'</strong>...');
-
-  function doJoin(){
-    // Reset dan mulai timeout dari sini (setelah peer lama benar-benar destroyed)
-    clearTimeout(connectTimeout);
-    connectTimeout=setTimeout(()=>{
-      hideConnecting();if(peer){try{peer.destroy();}catch(e){}peer=null;}
-      showNotif('Timeout — coba lagi!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);
-    },20000);
-
-    peer=new Peer('cks-g-'+Math.random().toString(36).substr(2,9),{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
-    peer.on('open',id=>{
-      myId=id;document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host...';
-      const conn=peer.connect(hp,{reliable:true});
-      const ht=setTimeout(()=>{
-        clearTimeout(connectTimeout);hideConnecting();
-        showNotif('Host tidak ditemukan — pastikan host masih online','err');
-        setConn('error','Tidak ditemukan');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);
-      },15000);
-      conn.on('open',()=>{
-        clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();
-        connections[hp]=conn;hostId=hp;roomCode=raw;
-        conn.on('data',d=>onMsg(d,conn.peer));conn.on('close',()=>onDisc(conn.peer));
-        conn.send({type:'join',name:myName});showRoomPanel(raw);
-        showNotif('Berhasil gabung '+raw,'ok');setConn('ready','Terhubung');
-        saveSession({roomCode:raw,myName,hostPeerId:hp,isHost:false});
-        // Rejoin: kirim ulang join setelah koneksi stabil jika game sudah berjalan
-        setTimeout(()=>{if(connections[hp])connections[hp].send({type:'join',name:myName});},1200);
-      });
-      conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek ke host!','err');setConn('error','Gagal');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);});
-    });
-    peer.on('error',err=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);});
-  }
-
-  // Destroy peer lama dengan bersih sebelum buat baru
-  if(peer){
-    try{peer.destroy();}catch(e){}
-    peer=null;
-    setTimeout(doJoin,200);
-  } else {
-    doJoin();
-  }
+  // FIX 8: destroy peer lama dulu, baru buat guest peer
+  destroyPeer(()=>initGuestPeer(raw));
 }
+
 function resumeSession(){
   const s=loadSession();if(!s)return;
   const n=document.getElementById('playerName').value.trim();
   if(s.myName&&!n)document.getElementById('playerName').value=s.myName;
   myName=s.myName||document.getElementById('playerName').value.trim()||'Pemain';
   if(s.isHost){
-    // Host rejoin: buat ulang room dengan kode yang sama
     showConn('Memulihkan','Membuat ulang ruangan <strong style="color:var(--gold-l)">'+s.roomCode+'</strong>...');
-    if(peer){try{peer.destroy();}catch(e){}peer=null;}
-    setTimeout(()=>createRoom(s.roomCode),200);
+    destroyPeer(()=>setTimeout(()=>createRoom(s.roomCode),100));
     return;
   }
   document.getElementById('joinCode').value=s.roomCode;
   joinRoom();
 }
-let connectTimeout=null;
+
 const showConn=(t,s)=>{document.getElementById('connOverlayTitle').textContent=t||'Menghubungkan...';document.getElementById('connOverlaySub').innerHTML=s||'Mohon tunggu...';document.getElementById('connectingOverlay').classList.add('show');};
 const hideConnecting=()=>document.getElementById('connectingOverlay').classList.remove('show');
-function cancelConnect(){clearTimeout(connectTimeout);hideConnecting();if(peer){peer.destroy();peer=null;}setConn('error','Dibatalkan');showNotif('Dibatalkan','warn');setTimeout(initIdlePeer,300);}
-function initIdlePeer(){
-  const tid='cks-idle-'+Math.random().toString(36).substr(2,6);
-  peer=new Peer(tid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
-  peer.on('open',()=>{setConn('ready','Siap Bermain');document.getElementById('createBtn').disabled=false;});
-  peer.on('error',()=>setConn('error','Gagal konek'));
+
+function cancelConnect(){
+  clearTimeout(connectTimeout);hideConnecting();
+  destroyPeer(()=>{setConn('error','Dibatalkan');showNotif('Dibatalkan','warn');initIdlePeer();});
 }
+
+function initIdlePeer(){
+  // Idle peer pakai ID acak — tidak butuh ID tetap
+  if(peer)return;// Jangan buat idle peer jika ada peer aktif
+  const tid='cks-idle-'+Math.random().toString(36).substr(2,6);
+  const p=new Peer(tid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
+  peer=p;
+  p.on('open',()=>{
+    if(peer!==p)return;// Sudah digantikan
+    setConn('ready','Siap Bermain');document.getElementById('createBtn').disabled=false;
+  });
+  p.on('error',()=>{
+    if(peer!==p)return;
+    setConn('error','Gagal konek');
+    // Coba lagi setelah 5 detik
+    peer=null;setTimeout(initIdlePeer,5000);
+  });
+  p.on('disconnected',()=>{
+    if(peer!==p)return;
+    setConn('connecting','Reconnect...');
+    try{p.reconnect();}catch(e){peer=null;setTimeout(initIdlePeer,3000);}
+  });
+}
+
 function showRoomPanel(code){
   roomCode=code;document.getElementById('roomCodeDisplay').textContent=code;document.getElementById('roomPanel').style.display='block';
   if(isHost){
-    // Pastikan host ada di players, tapi jangan reset players yang sudah ada
     const hostEntry=players.find(p=>p.id===myId||p.id==='(pending)');
     if(hostEntry){hostEntry.id=myId;hostEntry.name=myName;}
     else if(!players.find(p=>p.id===myId)){players.unshift({id:myId,name:myName,rank:null,cardCount:0});}
-    // Hapus pending jika sudah dapat myId
-    players=players.filter(p=>p.id!=='(pending)'||p.id===myId);
+    players=players.filter(p=>p.id!=='(pending)');
     document.getElementById('startWrap').style.display='block';renderLobbyPlayers();
     broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
     regRoom(code,myName,players.length);saveSession({roomCode:code,myName,hostPeerId:'cks-'+code,isHost:true});
   }
-  
 }
 const copyRoomCode=()=>{if(roomCode)navigator.clipboard.writeText(roomCode).then(()=>showNotif('Kode disalin: '+roomCode,'ok'));};
 const RI={king:'👑',queen:'👸',slave1:'⛓️',slave2:'😢'};
@@ -995,7 +1048,6 @@ function renderLobbyPlayers(){
     const ho=(p.id===hostId||(!hostId&&i===0));
     const kb=isHost&&p.id!==myId?`<button class="kick-btn" onclick="kickPlayer('${p.id}')">Kick</button>`:'';
     const dc=p.disconnected?` <span style="font-size:.68rem;color:rgba(255,71,87,.6)">⚡terputus</span>`:'';
-    // Use role avatar if role assigned, else plain avatar
     const init=(p.name||'?')[0].toUpperCase();
     const avHtml=p.rank
       ? `<div style="flex-shrink:0">${makeRoleAvatar(p.rank,init,'sm')}</div>`
@@ -1048,10 +1100,8 @@ function beginGameUI(){
 function renderGame(){
   renderOpp();renderHand();renderFelt();updateTurnUI();if(gs.log)setLog(gs.log);
   const r=gs.ranks?.[myId];
-  // Top rank badge (header)
   const el=document.getElementById('myRankBadge');
   if(el){el.textContent=r?`${RI[r]} ${RL[r]}`:'';el.style.display=r?'inline-flex':'none';}
-  // My role banner (bottom zone)
   const banner=document.getElementById('myRoleBanner');
   if(banner){
     if(r&&ROLE_CFG[r]){
@@ -1060,117 +1110,70 @@ function renderGame(){
       document.getElementById('myRoleBannerTitle').textContent=cfg.emoji+' Kamu: '+cfg.label;
       document.getElementById('myRoleBannerDesc').textContent=cfg.bannerDesc;
       banner.className='my-role-banner show '+cfg.bannerCls;
-    } else {
-      banner.className='my-role-banner';
-    }
+    } else {banner.className='my-role-banner';}
   }
 }
-/* ═══════ TITLE / JULUKAN SYSTEM ═══════
-   Data per pemain (by name, localStorage):
-   { wins, losses, asKing, asQueen, asSlave1, asSlave2,
-     winStreak, loseStreak, maxWinStreak, maxLoseStreak,
-     slaveStreak, kingStreak, total, titles:[] }
-════════════════════════════════════════════ */
+
+/* ═══════ TITLE SYSTEM ═══════ */
 const TITLE_LS='cks_titles_v1';
 let titleData={};
-
-/* ── Daftar Title ── */
 const TITLES=[
-  // Slave titles
-  {id:'forever_slave',   emoji:'⛓️', name:'Forever Slave',      desc:'Slave 10x berturut-turut',  check:s=>s.slaveStreak>=10},
-  {id:'born_to_suffer',  emoji:'😭', name:'Born to Suffer',     desc:'Total slave 20x',            check:s=>(s.asSlave1+s.asSlave2)>=20},
-  {id:'chain_collector', emoji:'🔗', name:'Chain Collector',    desc:'Total slave 10x',            check:s=>(s.asSlave1+s.asSlave2)>=10},
-  {id:'the_floor',       emoji:'🧹', name:'The Floor',          desc:'Slave2 sebanyak 5x',         check:s=>s.asSlave2>=5},
-  {id:'professional_loser',emoji:'📉',name:'Professional Loser',desc:'Kalah 15x',                  check:s=>s.losses>=15},
-  {id:'rock_bottom',     emoji:'🪨', name:'Rock Bottom',        desc:'Kalah 5x berturut-turut',    check:s=>s.maxLoseStreak>=5},
-  {id:'doormat',         emoji:'🚪', name:'Doormat',            desc:'Slave 3x berturut-turut',    check:s=>s.slaveStreak>=3},
-  {id:'underdog',        emoji:'🐕', name:'Underdog',           desc:'Slave lalu menang beruntun',  check:s=>s.slaveStreak>=2&&s.winStreak>=2},
-  // King/Queen titles
-  {id:'born_to_rule',    emoji:'👑', name:'Born to Rule',       desc:'King 10x',                   check:s=>s.asKing>=10},
-  {id:'iron_throne',     emoji:'🗡️', name:'Iron Throne',        desc:'King 5x berturut-turut',     check:s=>s.kingStreak>=5},
-  {id:'power_couple',    emoji:'💑', name:'Power Couple',       desc:'King/Queen 10x',             check:s=>(s.asKing+s.asQueen)>=10},
-  {id:'untouchable',     emoji:'🛡️', name:'Untouchable',        desc:'Menang 10x berturut-turut',  check:s=>s.maxWinStreak>=10},
-  {id:'king_of_kings',   emoji:'🏆', name:'King of Kings',      desc:'King 20x',                   check:s=>s.asKing>=20},
-  {id:'the_noble',       emoji:'🎖️', name:'The Noble',          desc:'Menang 10x total',           check:s=>s.wins>=10},
-  {id:'on_a_roll',       emoji:'🎲', name:'On a Roll',          desc:'Menang 3x berturut-turut',   check:s=>s.winStreak>=3},
-  {id:'comeback_kid',    emoji:'⚡', name:'Comeback Kid',       desc:'Menang setelah 3x kalah',    check:s=>s.maxLoseStreak>=3&&s.winStreak>=1},
-  // Milestone titles
-  {id:'veteran',         emoji:'🎗️', name:'Veteran',            desc:'Main 25x',                   check:s=>s.total>=25},
-  {id:'grinder',         emoji:'⚙️', name:'The Grinder',        desc:'Main 10x',                   check:s=>s.total>=10},
-  {id:'card_shark',      emoji:'🦈', name:'Card Shark',         desc:'Win rate >70% (min 10 game)',check:s=>s.total>=10&&s.wins/s.total>=0.7},
-  {id:'coin_flip',       emoji:'🪙', name:'Coin Flip',          desc:'Win rate 45-55% (min 10)',   check:s=>s.total>=10&&s.wins/s.total>=0.45&&s.wins/s.total<=0.55},
-  {id:'chaos_agent',     emoji:'🌪️', name:'Chaos Agent',        desc:'Win rate <30% (min 10)',     check:s=>s.total>=10&&s.wins/s.total<0.3},
-  {id:'first_blood',     emoji:'🩸', name:'First Blood',        desc:'Main pertama kali',          check:s=>s.total>=1},
-  {id:'jack_of_all',     emoji:'🃏', name:'Jack of All',        desc:'Pernah jadi semua role',     check:s=>s.asKing>=1&&s.asQueen>=1&&s.asSlave1>=1&&s.asSlave2>=1},
+  {id:'forever_slave',emoji:'⛓️',name:'Forever Slave',desc:'Slave 10x berturut-turut',check:s=>s.slaveStreak>=10},
+  {id:'born_to_suffer',emoji:'😭',name:'Born to Suffer',desc:'Total slave 20x',check:s=>(s.asSlave1+s.asSlave2)>=20},
+  {id:'chain_collector',emoji:'🔗',name:'Chain Collector',desc:'Total slave 10x',check:s=>(s.asSlave1+s.asSlave2)>=10},
+  {id:'the_floor',emoji:'🧹',name:'The Floor',desc:'Slave2 sebanyak 5x',check:s=>s.asSlave2>=5},
+  {id:'professional_loser',emoji:'📉',name:'Professional Loser',desc:'Kalah 15x',check:s=>s.losses>=15},
+  {id:'rock_bottom',emoji:'🪨',name:'Rock Bottom',desc:'Kalah 5x berturut-turut',check:s=>s.maxLoseStreak>=5},
+  {id:'doormat',emoji:'🚪',name:'Doormat',desc:'Slave 3x berturut-turut',check:s=>s.slaveStreak>=3},
+  {id:'underdog',emoji:'🐕',name:'Underdog',desc:'Slave lalu menang beruntun',check:s=>s.slaveStreak>=2&&s.winStreak>=2},
+  {id:'born_to_rule',emoji:'👑',name:'Born to Rule',desc:'King 10x',check:s=>s.asKing>=10},
+  {id:'iron_throne',emoji:'🗡️',name:'Iron Throne',desc:'King 5x berturut-turut',check:s=>s.kingStreak>=5},
+  {id:'power_couple',emoji:'💑',name:'Power Couple',desc:'King/Queen 10x',check:s=>(s.asKing+s.asQueen)>=10},
+  {id:'untouchable',emoji:'🛡️',name:'Untouchable',desc:'Menang 10x berturut-turut',check:s=>s.maxWinStreak>=10},
+  {id:'king_of_kings',emoji:'🏆',name:'King of Kings',desc:'King 20x',check:s=>s.asKing>=20},
+  {id:'the_noble',emoji:'🎖️',name:'The Noble',desc:'Menang 10x total',check:s=>s.wins>=10},
+  {id:'on_a_roll',emoji:'🎲',name:'On a Roll',desc:'Menang 3x berturut-turut',check:s=>s.winStreak>=3},
+  {id:'comeback_kid',emoji:'⚡',name:'Comeback Kid',desc:'Menang setelah 3x kalah',check:s=>s.maxLoseStreak>=3&&s.winStreak>=1},
+  {id:'veteran',emoji:'🎗️',name:'Veteran',desc:'Main 25x',check:s=>s.total>=25},
+  {id:'grinder',emoji:'⚙️',name:'The Grinder',desc:'Main 10x',check:s=>s.total>=10},
+  {id:'card_shark',emoji:'🦈',name:'Card Shark',desc:'Win rate >70% (min 10 game)',check:s=>s.total>=10&&s.wins/s.total>=0.7},
+  {id:'coin_flip',emoji:'🪙',name:'Coin Flip',desc:'Win rate 45-55% (min 10)',check:s=>s.total>=10&&s.wins/s.total>=0.45&&s.wins/s.total<=0.55},
+  {id:'chaos_agent',emoji:'🌪️',name:'Chaos Agent',desc:'Win rate <30% (min 10)',check:s=>s.total>=10&&s.wins/s.total<0.3},
+  {id:'first_blood',emoji:'🩸',name:'First Blood',desc:'Main pertama kali',check:s=>s.total>=1},
+  {id:'jack_of_all',emoji:'🃏',name:'Jack of All',desc:'Pernah jadi semua role',check:s=>s.asKing>=1&&s.asQueen>=1&&s.asSlave1>=1&&s.asSlave2>=1},
 ];
-
-function loadTitles(){
-  try{const s=localStorage.getItem(TITLE_LS);if(s)titleData=JSON.parse(s);}catch(e){}
-}
-function saveTitles(){
-  try{localStorage.setItem(TITLE_LS,JSON.stringify(titleData));}catch(e){}
-}
+function loadTitles(){try{const s=localStorage.getItem(TITLE_LS);if(s)titleData=JSON.parse(s);}catch(e){}}
+function saveTitles(){try{localStorage.setItem(TITLE_LS,JSON.stringify(titleData));}catch(e){}}
 function getPlayerData(name){
   if(!titleData[name])titleData[name]={wins:0,losses:0,asKing:0,asQueen:0,asSlave1:0,asSlave2:0,winStreak:0,loseStreak:0,maxWinStreak:0,maxLoseStreak:0,slaveStreak:0,kingStreak:0,total:0,titles:[]};
   return titleData[name];
 }
-function checkNewTitles(name){
-  const s=getPlayerData(name);const newOnes=[];
-  TITLES.forEach(t=>{
-    if(!s.titles.includes(t.id)&&t.check(s)){s.titles.push(t.id);newOnes.push(t);}
-  });
-  return newOnes;
-}
-function getActiveTitles(name){
-  const s=getPlayerData(name);
-  return TITLES.filter(t=>s.titles.includes(t.id));
-}
-function getBestTitle(name){
-  const active=getActiveTitles(name);
-  return active.length?active[active.length-1]:null;
-}
+function checkNewTitles(name){const s=getPlayerData(name);const newOnes=[];TITLES.forEach(t=>{if(!s.titles.includes(t.id)&&t.check(s)){s.titles.push(t.id);newOnes.push(t);}});return newOnes;}
+function getActiveTitles(name){const s=getPlayerData(name);return TITLES.filter(t=>s.titles.includes(t.id));}
+function getBestTitle(name){const active=getActiveTitles(name);return active.length?active[active.length-1]:null;}
 function recordRoundResult(name,role){
   const s=getPlayerData(name);s.total++;
-  const isWin=role==='king'||role==='queen';
-  const isSlave=role==='slave1'||role==='slave2';
-  if(role==='king')s.asKing++;
-  else if(role==='queen')s.asQueen++;
-  else if(role==='slave1')s.asSlave1++;
-  else if(role==='slave2')s.asSlave2++;
-  if(isWin){
-    s.wins++;s.winStreak++;s.loseStreak=0;s.slaveStreak=0;
-    if(role==='king'){s.kingStreak++;}else{s.kingStreak=0;}
-    if(s.winStreak>s.maxWinStreak)s.maxWinStreak=s.winStreak;
-  } else {
-    s.losses++;s.loseStreak++;s.winStreak=0;s.kingStreak=0;
-    if(isSlave){s.slaveStreak++;}else{s.slaveStreak=0;}
-    if(s.loseStreak>s.maxLoseStreak)s.maxLoseStreak=s.loseStreak;
-  }
-  saveTitles();
-  return checkNewTitles(name);
+  const isWin=role==='king'||role==='queen';const isSlave=role==='slave1'||role==='slave2';
+  if(role==='king')s.asKing++;else if(role==='queen')s.asQueen++;else if(role==='slave1')s.asSlave1++;else if(role==='slave2')s.asSlave2++;
+  if(isWin){s.wins++;s.winStreak++;s.loseStreak=0;s.slaveStreak=0;if(role==='king'){s.kingStreak++;}else{s.kingStreak=0;}if(s.winStreak>s.maxWinStreak)s.maxWinStreak=s.winStreak;}
+  else{s.losses++;s.loseStreak++;s.winStreak=0;s.kingStreak=0;if(isSlave){s.slaveStreak++;}else{s.slaveStreak=0;}if(s.loseStreak>s.maxLoseStreak)s.maxLoseStreak=s.loseStreak;}
+  saveTitles();return checkNewTitles(name);
 }
 function updateTitlesForRound(finishOrder){
   const newTitleEvents=[];
   finishOrder.forEach((pid,i)=>{
     const p=players.find(x=>x.id===pid);if(!p)return;
-    const roleKeys=['king','queen','slave1','slave2'];
-    const role=roleKeys[i]||'slave2';
+    const roleKeys=['king','queen','slave1','slave2'];const role=roleKeys[i]||'slave2';
     const newT=recordRoundResult(p.name,role);
     if(newT.length)newTitleEvents.push({name:p.name,titles:newT,pid});
   });
-  gs.titleSnap=buildTitleSnap();
-  gs.newTitleEvents=newTitleEvents;
+  gs.titleSnap=buildTitleSnap();gs.newTitleEvents=newTitleEvents;
 }
 function buildTitleSnap(){
   const snap={};
-  players.forEach(p=>{
-    const d=titleData[p.name];
-    if(d)snap[p.name]={total:d.total,wins:d.wins,losses:d.losses,winStreak:d.winStreak,loseStreak:d.loseStreak,titles:d.titles||[]};
-  });
+  players.forEach(p=>{const d=titleData[p.name];if(d)snap[p.name]={total:d.total,wins:d.wins,losses:d.losses,winStreak:d.winStreak,loseStreak:d.loseStreak,titles:d.titles||[]};});
   return snap;
 }
-
-/* ── Render title badge di header ── */
 function renderTitleBadge(){
   const myN=players.find(p=>p.id===myId)?.name||myName;
   const el=document.getElementById('myStreakBadge');if(!el)return;
@@ -1178,18 +1181,14 @@ function renderTitleBadge(){
   if(!snap||!snap.titles||!snap.titles.length){el.style.display='none';return;}
   const best=TITLES.filter(t=>snap.titles.includes(t.id)).pop();
   if(!best){el.style.display='none';return;}
-  el.style.display='inline-flex';
-  el.textContent=best.emoji+' '+best.name;
+  el.style.display='inline-flex';el.textContent=best.emoji+' '+best.name;
   const isWinTitle=['born_to_rule','iron_throne','power_couple','untouchable','king_of_kings','the_noble','on_a_roll','comeback_kid','card_shark'].includes(best.id);
   if(isWinTitle){el.style.background='rgba(201,168,76,.2)';el.style.border='1px solid rgba(201,168,76,.5)';el.style.color='var(--gold-l)';}
   else if(['forever_slave','born_to_suffer','rock_bottom','the_floor','professional_loser','doormat'].includes(best.id)){el.style.background='rgba(239,68,68,.15)';el.style.border='1px solid rgba(239,68,68,.4)';el.style.color='#fca5a5';}
   else{el.style.background='rgba(168,85,247,.15)';el.style.border='1px solid rgba(168,85,247,.4)';el.style.color='#e879f9';}
 }
-
-/* ── Title bar di win screen ── */
 function renderTitleBar(finishOrder){
   const el=document.getElementById('winStreakBar');if(!el)return;
-  // New title unlocked events
   const events=gs.newTitleEvents||[];
   if(!events.length){el.innerHTML='';return;}
   el.innerHTML=events.map(ev=>{
@@ -1197,8 +1196,6 @@ function renderTitleBar(finishOrder){
     return ev.titles.map(t=>`<span class="streak-chip win${isMe?' streak-fire':''}">🔓 ${t.emoji} "${t.name}"${isMe?' (Kamu)':' '+esc(ev.name)}</span>`).join('');
   }).join('');
 }
-
-/* ── Tabel title di win screen ── */
 function makeTitleTable(finishOrder){
   const snap=gs.titleSnap||{};
   const rows=finishOrder.map((pid)=>{
@@ -1224,73 +1221,24 @@ function makeTitleTable(finishOrder){
   </table>`;
 }
 
-/* ═══════ FIREBASE MATCH LOG ═══════ */
-const FB_CFG={
-  apiKey:'AIzaSyD2G5cYkoH59dyP_T1Re-3jbrUw1_Wx54k',
-  authDomain:'games-45d15.firebaseapp.com',
-  projectId:'games-45d15',
-  storageBucket:'games-45d15.firebasestorage.app',
-  messagingSenderId:'15488632181',
-  appId:'1:15488632181:web:f4ee624d2febb6a6be7f3c',
-  measurementId:'G-X47ZG7C9P0',
-  databaseURL:'https://games-45d15-default-rtdb.firebaseio.com'
-};
+/* ═══════ FIREBASE ═══════ */
+const FB_CFG={apiKey:'AIzaSyD2G5cYkoH59dyP_T1Re-3jbrUw1_Wx54k',authDomain:'games-45d15.firebaseapp.com',projectId:'games-45d15',storageBucket:'games-45d15.firebasestorage.app',messagingSenderId:'15488632181',appId:'1:15488632181:web:f4ee624d2febb6a6be7f3c',measurementId:'G-X47ZG7C9P0',databaseURL:'https://games-45d15-default-rtdb.firebaseio.com'};
 let fbReady=false;
-function initFirebase(){
-  try{
-    if(typeof firebase==='undefined')return;
-    if(!firebase.apps.length)firebase.initializeApp(FB_CFG);
-    fbReady=true;
-    console.log('[Firebase] Connected ✓');
-  }catch(e){fbReady=false;console.warn('[Firebase] Init failed:',e);}
-}
+function initFirebase(){try{if(typeof firebase==='undefined')return;if(!firebase.apps.length)firebase.initializeApp(FB_CFG);fbReady=true;}catch(e){fbReady=false;}}
 async function logMatchToFirebase(finishOrder){
   if(!fbReady)return;
-  try{
-    const roleKeys=['king','queen','slave1','slave2'];
-    const entry={
-      ts:Date.now(),
-      date:new Date().toISOString(),
-      roomCode,
-      results:finishOrder.map((pid,i)=>({
-        name:players.find(p=>p.id===pid)?.name||'?',
-        role:roleKeys[i]||'slave2',
-        position:i+1
-      })),
-      playerCount:finishOrder.length
-    };
-    await firebase.database().ref('matches').push(entry);
-    console.log('[Firebase] Match logged ✓');
-  }catch(e){console.warn('[Firebase] Log failed:',e);}
+  try{const roleKeys=['king','queen','slave1','slave2'];const entry={ts:Date.now(),date:new Date().toISOString(),roomCode,results:finishOrder.map((pid,i)=>({name:players.find(p=>p.id===pid)?.name||'?',role:roleKeys[i]||'slave2',position:i+1})),playerCount:finishOrder.length};await firebase.database().ref('matches').push(entry);}catch(e){}
 }
 
 const ROLE_CFG={
-  king:{emoji:'👑',label:'King',cls:'role-king',desc:'Penguasa tertinggi',
-    crown:'<div class="role-crown">👑</div>',
-    ring:'<div class="role-king-ring"></div>',
-    bannerDesc:'Kamu raja! Terima kartu terbaik & kembalikan sesukamu.',
-    bannerCls:'king'},
-  queen:{emoji:'👸',label:'Queen',cls:'role-queen',desc:'Sang Ratu',
-    crown:'<div class="role-crown" style="font-size:.8rem;top:-10px">👸</div>',
-    ring:'',
-    bannerDesc:'Kamu ratu! Terima kartu dari Slave 1 & kembalikan sesukamu.',
-    bannerCls:'queen'},
-  slave1:{emoji:'⛓️',label:'Slave 1',cls:'role-slave1',desc:'Budak Pertama',
-    crown:'<div class="role-chain">⛓️</div>',
-    ring:'',
-    bannerDesc:'Beri kartu TERTINGGI ke Queen. Terima kembaliannya.',
-    bannerCls:'slave1'},
-  slave2:{emoji:'😢',label:'Slave 2',cls:'role-slave2',desc:'Budak Utama',
-    crown:'<div class="role-chain" style="font-size:.6rem">⛓️⛓️</div>',
-    ring:'',
-    bannerDesc:'Beri 2 kartu TERTINGGI ke King. Terima kembaliannya.',
-    bannerCls:'slave2'},
+  king:{emoji:'👑',label:'King',cls:'role-king',desc:'Penguasa tertinggi',crown:'<div class="role-crown">👑</div>',ring:'<div class="role-king-ring"></div>',bannerDesc:'Kamu raja! Terima kartu terbaik & kembalikan sesukamu.',bannerCls:'king'},
+  queen:{emoji:'👸',label:'Queen',cls:'role-queen',desc:'Sang Ratu',crown:'<div class="role-crown" style="font-size:.8rem;top:-10px">👸</div>',ring:'',bannerDesc:'Kamu ratu! Terima kartu dari Slave 1 & kembalikan sesukamu.',bannerCls:'queen'},
+  slave1:{emoji:'⛓️',label:'Slave 1',cls:'role-slave1',desc:'Budak Pertama',crown:'<div class="role-chain">⛓️</div>',ring:'',bannerDesc:'Beri kartu TERTINGGI ke Queen. Terima kembaliannya.',bannerCls:'slave1'},
+  slave2:{emoji:'😢',label:'Slave 2',cls:'role-slave2',desc:'Budak Utama',crown:'<div class="role-chain" style="font-size:.6rem">⛓️⛓️</div>',ring:'',bannerDesc:'Beri 2 kartu TERTINGGI ke King. Terima kembaliannya.',bannerCls:'slave2'},
 };
 function makeRoleAvatar(role,initial,size='md'){
   const cfg=ROLE_CFG[role];if(!cfg)return null;
-  const sz=size==='sm'?38:size==='lg'?72:52;
-  const fs=size==='sm'?'1.15rem':size==='lg'?'2.2rem':'1.6rem';
-  const lfs=size==='sm'?'.6rem':size==='lg'?'.78rem':'.62rem';
+  const sz=size==='sm'?38:size==='lg'?72:52;const fs=size==='sm'?'1.15rem':size==='lg'?'2.2rem':'1.6rem';const lfs=size==='sm'?'.6rem':size==='lg'?'.78rem':'.62rem';
   return `<div class="role-avatar ${cfg.cls}" style="gap:${size==='lg'?'5px':'3px'}">
     <div class="role-avatar-img" style="width:${sz}px;height:${sz}px;font-size:${fs}">
       ${cfg.crown}${cfg.ring}
@@ -1305,8 +1253,7 @@ function renderOpp(){
   row.innerHTML=opps.map((p,i)=>{
     const cnt=(gs.hands[p.id]||[]).length,iT=gs.currentPlayer===p.id,backs=Math.max(1,Math.min(cnt,13));
     const bH=Array(backs).fill('<div class="cb"></div>').join('');
-    const pr=gs.ranks?.[p.id];
-    const initial=(p.name||'?')[0].toUpperCase();
+    const pr=gs.ranks?.[p.id];const initial=(p.name||'?')[0].toUpperCase();
     const avatarHtml=pr?makeRoleAvatar(pr,initial,'sm'):`<div style="width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;background:${ac[i%4]};color:#fff">${initial}</div>`;
     const turnDot=`<span class="turn-dot ${iT?'on':''}"></span>`;
     const skipped=(gs.skippedPlayers||[]).includes(p.id);
@@ -1369,29 +1316,17 @@ function showExchangeUI(){
   const et=document.getElementById('exchangeTitle'),ed=document.getElementById('exchangeDesc'),eb=document.getElementById('exchangeBtn');
   pan.style.display='flex';exchangeMode=null;selCards=[];
   if(gs.phase==='nextRound'){
-    et.textContent='✅ Tukar Kartu Selesai!';
-    ed.innerHTML='Kartu sudah ditukar. Siap bermain!';
+    et.textContent='✅ Tukar Kartu Selesai!';ed.innerHTML='Kartu sudah ditukar. Siap bermain!';
     eb.textContent='▶ Mulai Bermain';
-    eb.onclick=()=>{
-      if(!isHost)return;
-      // Exchange selesai, langsung mulai bermain dengan tangan yang sudah ditukar
-      gs.phase='playing';gs.exchangeState=null;
-      gs.log='Ronde dimulai!';
-      bsync();
-      pan.style.display='none';
-    };
-    eb.style.display=isHost?'block':'none';
-    renderHand();return;
+    eb.onclick=()=>{if(!isHost)return;gs.phase='playing';gs.exchangeState=null;gs.log='Ronde dimulai!';bsync();pan.style.display='none';};
+    eb.style.display=isHost?'block':'none';renderHand();return;
   }
   if(!r){pan.style.display='none';return;}
   const ex=gs.exchangeState;
   const setUI=(t,d,mode,bt,fn)=>{
     et.textContent=t;ed.innerHTML=d;exchangeMode=mode;eb.textContent=bt;eb.onclick=fn;eb.style.display='block';
-    // Jika mode 'give' (slave), otomatis pilih kartu tertinggi
-    if(mode==='give'){
-      const sorted=[...myHand].sort((a,b)=>cardPow(a)-cardPow(b));
-      selCards=sorted.length?[sorted[sorted.length-1]]:[];
-    } else {selCards=[];}
+    if(mode==='give'){const sorted=[...myHand].sort((a,b)=>cardPow(a)-cardPow(b));selCards=sorted.length?[sorted[sorted.length-1]]:[];}
+    else{selCards=[];}
     renderHand(mode==='give');
   };
   const wait=(t,d)=>{et.textContent=t;ed.innerHTML=d;eb.style.display='none';renderHand();};
@@ -1437,44 +1372,26 @@ function nextActive(from){
   for(let i=1;i<ord.length+1;i++){const n=ord[(idx+i)%ord.length];if((gs.hands[n]||[]).length>0)return n;}
   return ord[(idx+1)%ord.length];
 }
-// Seperti nextActive tapi juga lewati player yang sudah skip di putaran ini
 function nextActiveNotSkipped(from){
-  const ord=gs.playerOrder,idx=ord.indexOf(from);
-  const skipped=gs.skippedPlayers||[];
-  for(let i=1;i<ord.length+1;i++){
-    const n=ord[(idx+i)%ord.length];
-    if((gs.hands[n]||[]).length>0&&!skipped.includes(n))return n;
-  }
-  // Semua sudah skip — fallback ke nextActive
+  const ord=gs.playerOrder,idx=ord.indexOf(from);const skipped=gs.skippedPlayers||[];
+  for(let i=1;i<ord.length+1;i++){const n=ord[(idx+i)%ord.length];if((gs.hands[n]||[]).length>0&&!skipped.includes(n))return n;}
   return nextActive(from);
 }
 function showWin(wid){
   document.getElementById('winScreen').classList.add('show');
-  const fo=gs.finishOrder||[wid];
-  const roleKeys=['king','queen','slave1','slave2'];
-  const myP=fo.indexOf(myId);
-  const myRoleKey=roleKeys[myP]||(myP>=0?'slave2':'slave2');
+  const fo=gs.finishOrder||[wid];const roleKeys=['king','queen','slave1','slave2'];
+  const myP=fo.indexOf(myId);const myRoleKey=roleKeys[myP]||(myP>=0?'slave2':'slave2');
   const myRCfg=ROLE_CFG[myRoleKey]||ROLE_CFG.slave2;
   const roleColors={king:'#c9a84c',queen:'#a855f7',slave1:'#64748b',slave2:'#ef4444'};
-
-  // Big avatar for my result
   const myInitial=(players.find(p=>p.id===myId)?.name||'?')[0].toUpperCase();
   document.getElementById('winEmoji').innerHTML=makeRoleAvatar(myRoleKey,myInitial,'lg')||myRCfg.emoji;
   document.getElementById('winTitle').textContent='Kamu: '+myRCfg.label;
   document.getElementById('winTitle').style.color=roleColors[myRoleKey];
-
-  // Streak bar (prominent streaks)
   renderTitleBar(fo);
-
   const list=fo.map((pid,i)=>{
-    const rk=roleKeys[i]||'slave2';const cfg=ROLE_CFG[rk];
-    const pN=players.find(p=>p.id===pid)?.name||'?';const isM=pid===myId;
-    const col=roleColors[rk];
-    const init=pN[0].toUpperCase();
-    const av=makeRoleAvatar(rk,init,'sm');
-    return `<div style="display:flex;align-items:center;gap:10px;padding:.42rem .65rem;
-      background:${isM?'rgba(201,168,76,.12)':'rgba(255,255,255,.04)'};border-radius:9px;margin-bottom:.3rem;
-      border:1px solid ${isM?'rgba(201,168,76,.4)':col+'44'}">
+    const rk=roleKeys[i]||'slave2';const cfg=ROLE_CFG[rk];const pN=players.find(p=>p.id===pid)?.name||'?';const isM=pid===myId;
+    const col=roleColors[rk];const init=pN[0].toUpperCase();const av=makeRoleAvatar(rk,init,'sm');
+    return `<div style="display:flex;align-items:center;gap:10px;padding:.42rem .65rem;background:${isM?'rgba(201,168,76,.12)':'rgba(255,255,255,.04)'};border-radius:9px;margin-bottom:.3rem;border:1px solid ${isM?'rgba(201,168,76,.4)':col+'44'}">
       <div style="flex-shrink:0">${av}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;color:${col};font-size:.85rem">${cfg.emoji} ${cfg.label}</div>
@@ -1483,12 +1400,8 @@ function showWin(wid){
       <div style="font-size:1.5rem">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'💀'}</div>
     </div>`;
   }).join('');
-
-  document.getElementById('winSub').innerHTML=
-    `<div style="font-size:.74rem;color:rgba(240,234,216,.35);margin-bottom:.6rem;letter-spacing:1px;text-transform:uppercase">Hasil Ronde</div>${list}`+
-    makeTitleTable(fo);
+  document.getElementById('winSub').innerHTML=`<div style="font-size:.74rem;color:rgba(240,234,216,.35);margin-bottom:.6rem;letter-spacing:1px;text-transform:uppercase">Hasil Ronde</div>${list}`+makeTitleTable(fo);
   document.getElementById('nextRoundBtn').style.display=isHost?'block':'none';
-  // Update streak badge in header
   renderTitleBadge();
 }
 function backToLobby(){
@@ -1505,33 +1418,12 @@ let _actx=null;
 function getACtx(){if(!_actx)try{_actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _actx;}
 function playChatSound(){
   const ctx=getACtx();if(!ctx)return;
-  try{
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.type='sine';o.frequency.setValueAtTime(880,ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(1320,ctx.currentTime+0.06);
-    g.gain.setValueAtTime(0,ctx.currentTime);
-    g.gain.linearRampToValueAtTime(0.18,ctx.currentTime+0.01);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.28);
-    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.3);
-  }catch(e){}
+  try{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.setValueAtTime(880,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(1320,ctx.currentTime+0.06);g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(0.18,ctx.currentTime+0.01);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.28);o.start(ctx.currentTime);o.stop(ctx.currentTime+0.3);}catch(e){}
 }
 function playStickerSound(){
   const ctx=getACtx();if(!ctx)return;
-  try{
-    const notes=[523,659,784];
-    notes.forEach((freq,i)=>{
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      o.type='sine';o.frequency.value=freq;
-      const t=ctx.currentTime+i*0.1;
-      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
-      o.start(t);o.stop(t+0.25);
-    });
-  }catch(e){}
+  try{const notes=[523,659,784];notes.forEach((freq,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=freq;const t=ctx.currentTime+i*0.1;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.001,t+0.22);o.start(t);o.stop(t+0.25);});}catch(e){}
 }
-// Unlock audio context on first user interaction
 document.addEventListener('click',()=>{const c=getACtx();if(c&&c.state==='suspended')c.resume();},{once:true});
 document.addEventListener('touchend',()=>{const c=getACtx();if(c&&c.state==='suspended')c.resume();},{once:true});
 
@@ -1577,20 +1469,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   const ph='Pemain'+Math.floor(Math.random()*99+1);
   document.getElementById('playerName').placeholder=ph;
   document.getElementById('joinCode').addEventListener('input',function(){this.value=this.value.toUpperCase();});
-  loadTitles();
-  initFirebase();
-  initStickers();
-
-  // Auto-fill nama dari localStorage
+  loadTitles();initFirebase();initStickers();
   const savedName=loadPlayerName();
   if(savedName)document.getElementById('playerName').value=savedName;
+  document.getElementById('playerName').addEventListener('input',function(){if(this.value.trim())savePlayerName(this.value.trim());});
 
-  // Simpan nama saat input berubah
-  document.getElementById('playerName').addEventListener('input',function(){
-    if(this.value.trim())savePlayerName(this.value.trim());
-  });
-
-  // Session banner
   const sess=loadSession();
   if(sess){
     const b=document.getElementById('sessionBanner');b.style.display='flex';
@@ -1600,9 +1483,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(sess.myName)document.getElementById('playerName').value=sess.myName;
   }
 
-  // Restore blob ID from URL/localStorage
   const _bInit=getBinId();
   if(_bInit){_binId=_bInit;const el=document.getElementById('binHint');if(el){el.style.display='block';const su=document.getElementById('binShareUrl');if(su)su.textContent=location.href;}}
+  
   initIdlePeer();
   fetchRoomList();
   setInterval(fetchRoomList,30000);
