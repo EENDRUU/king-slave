@@ -1054,7 +1054,7 @@ function showRoomPanel(code){
     broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
     regRoom(code,myName,players.length);saveSession({roomCode:code,myName,hostPeerId:'cks-'+code,isHost:true});
   }
-  }
+  
 }
 const copyRoomCode=()=>{if(roomCode)navigator.clipboard.writeText(roomCode).then(()=>showNotif('Kode disalin: '+roomCode,'ok'));};
 const RI={king:'👑',queen:'👸',slave1:'⛓️',slave2:'😢'};
