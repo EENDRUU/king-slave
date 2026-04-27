@@ -625,7 +625,21 @@ function quickJoin(code){
   document.getElementById('joinCode').value=code;joinRoom();
 }
 
-/* ═══════ NETWORKING ═══════ */
+/* ═══════ PEER CONFIG ═══════ */
+const PEER_CFG={
+  host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
+  config:{
+    iceServers:[
+      {urls:'stun:stun.l.google.com:19302'},
+      {urls:'stun:stun1.l.google.com:19302'},
+      {urls:'stun:stun2.l.google.com:19302'},
+      {urls:'stun:global.stun.twilio.com:3478'}
+    ]
+  }
+};
+function makePeer(id){return new Peer(id,PEER_CFG);}
+
+
 let peer=null,myId='',myName='';
 let connections={};
 let players=[];
@@ -634,7 +648,7 @@ const MAX_P=4;
 
 function initPeer(asHost,code,forcedId){
   const pid=forcedId||(asHost?'cks-'+code:'cks-g-'+Math.random().toString(36).substr(2,9));
-  peer=new Peer(pid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
+  peer=makePeer(pid);
   peer.on('open',id=>{
     clearTimeout(connectTimeout);hideConnecting();myId=id;
     setConn('ready','Siap');document.getElementById('createBtn').disabled=false;
@@ -657,13 +671,15 @@ function initPeer(asHost,code,forcedId){
   });
 }
 function setupConn(conn){
-  connections[conn.peer] = conn; // simpan lebih awal
   conn.on('open',()=>{
+    connections[conn.peer]=conn;
     conn.on('data',d=>onMsg(d,conn.peer));
     conn.on('close',()=>onDisc(conn.peer));
+    conn.on('error',()=>onDisc(conn.peer));
   });
   conn.on('error',()=>onDisc(conn.peer));
 }
+
 function onMsg(data,from){
   // Host relays to all others
   if(isHost&&!data._r){const fwd={...data,_r:1};Object.entries(connections).forEach(([p,c])=>{if(p!==from)try{c.send(fwd)}catch(e){}});}
@@ -696,17 +712,15 @@ function onMsg(data,from){
         setupConn(c);
         c.on('open',()=>{
           broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
-          renderLobbyPlayers();
-          updateReg(roomCode,players.length,gs.started);
-          if(gs.started) sendTo(from,{type:'gameSync',gs});
-          if(chatHistory.length) sendTo(from,{type:'chatHist',msgs:chatHistory.slice(-50)});
+          renderLobbyPlayers();updateReg(roomCode,players.length,gs.started);
+          if(gs.started)c.send({type:'gameSync',gs});
+          if(chatHistory.length)c.send({type:'chatHist',msgs:chatHistory.slice(-50)});
         });
       } else {
-       broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
-        renderLobbyPlayers();
-        updateReg(roomCode,players.length,gs.started);
-        if(gs.started) sendTo(from,{type:'gameSync',gs});
-        if(chatHistory.length) sendTo(from,{type:'chatHist',msgs:chatHistory.slice(-50)});
+        broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
+        renderLobbyPlayers();updateReg(roomCode,players.length,gs.started);
+        if(gs.started)sendTo(from,{type:'gameSync',gs});
+        if(chatHistory.length)sendTo(from,{type:'chatHist',msgs:chatHistory.slice(-50)});
       }}
       break;
 
@@ -908,48 +922,94 @@ function joinRoom(){
   isHost=false;const hp='cks-'+raw;
 
   showConn('Menghubungkan','Mencari ruangan <strong style="color:var(--gold-l)">'+raw+'</strong>...');
+  clearTimeout(connectTimeout);
 
-  function doJoin(){
-    // Reset dan mulai timeout dari sini (setelah peer lama benar-benar destroyed)
-    clearTimeout(connectTimeout);
-    connectTimeout=setTimeout(()=>{
-      hideConnecting();if(peer){try{peer.destroy();}catch(e){}peer=null;}
-      showNotif('Timeout — coba lagi!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);
-    },20000);
+  function attemptConnect(retryCount){
+    if(retryCount>3){
+      hideConnecting();showNotif('Gagal konek setelah beberapa percobaan. Coba lagi!','err');
+      setConn('error','Gagal');setTimeout(initIdlePeer,300);return;
+    }
 
-    peer=new Peer('cks-g-'+Math.random().toString(36).substr(2,9),{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
-    peer.on('open',id=>{
-      myId=id;document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host...';
-      const conn=peer.connect(hp,{reliable:true});
+    function doConnect(){
+      clearTimeout(connectTimeout);
+      connectTimeout=setTimeout(()=>{
+        hideConnecting();if(peer){try{peer.destroy();}catch(e){}peer=null;}
+        showNotif('Timeout — coba lagi!','err');setConn('error','Timeout');setTimeout(initIdlePeer,300);
+      },20000);
+
+      // Kalau peer idle sudah open, langsung pakai — tidak perlu buat baru
+      if(peer&&peer.open&&!peer.destroyed){
+        myId=peer.id;
+        doConnectToHost();
+        return;
+      }
+
+      // Buat peer baru
+      if(peer){try{peer.destroy();}catch(e){}peer=null;}
+      const gid='cks-g-'+Math.random().toString(36).substr(2,9);
+      peer=makePeer(gid);
+      peer.on('open',id=>{
+        myId=id;
+        document.getElementById('connOverlaySub').innerHTML='Server ✓ — Menghubungi host...';
+        doConnectToHost();
+      });
+      peer.on('error',err=>{
+        clearTimeout(connectTimeout);
+        if(err.type==='unavailable-id'||err.type==='peer-unavailable'){
+          // Retry dengan ID baru setelah delay
+          if(peer){try{peer.destroy();}catch(e){}peer=null;}
+          setTimeout(()=>attemptConnect(retryCount+1), 800*(retryCount+1));
+          return;
+        }
+        hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');
+        if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);
+      });
+    }
+
+    function doConnectToHost(){
+      const conn=peer.connect(hp,{reliable:true,serialization:'json'});
       const ht=setTimeout(()=>{
         clearTimeout(connectTimeout);hideConnecting();
-        showNotif('Host tidak ditemukan — pastikan host masih online','err');
-        setConn('error','Tidak ditemukan');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);
-      },15000);
+        if(retryCount<2){
+          // Retry sekali lagi sebelum menyerah
+          document.getElementById('connOverlaySub').innerHTML='Mencoba ulang...';
+          setTimeout(()=>attemptConnect(retryCount+1),500);
+        } else {
+          showNotif('Host tidak ditemukan — pastikan host masih online','err');
+          setConn('error','Tidak ditemukan');
+          if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);
+        }
+      },8000);
       conn.on('open',()=>{
-         clearTimeout(connectTimeout); clearTimeout(ht); hideConnecting();
-          connections[hp]=conn; hostId=hp; roomCode=raw;
-          conn.on('data',d=>onMsg(d,conn.peer));
-          conn.on('close',()=>onDisc(conn.peer));
-          conn.send({type:'join',name:myName}); // kirim HANYA sekali
-          showRoomPanel(raw);
-          showNotif('Berhasil gabung '+raw,'ok');
-          setConn('ready','Terhubung');
-          saveSession({roomCode:raw,myName,hostPeerId:hp,isHost:false});
-       
+        clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();
+        connections[hp]=conn;hostId=hp;roomCode=raw;
+        conn.on('data',d=>onMsg(d,conn.peer));
+        conn.on('close',()=>onDisc(conn.peer));
+        conn.on('error',()=>onDisc(conn.peer));
+        conn.send({type:'join',name:myName});
+        showRoomPanel(raw);
+        showNotif('Berhasil gabung '+raw,'ok');setConn('ready','Terhubung');
+        saveSession({roomCode:raw,myName,hostPeerId:hp,isHost:false});
+        setTimeout(()=>{if(connections[hp]&&connections[hp].open)connections[hp].send({type:'join',name:myName});},1500);
       });
-      conn.on('error',()=>{clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();showNotif('Gagal konek ke host!','err');setConn('error','Gagal');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);});
-    });
-    peer.on('error',err=>{clearTimeout(connectTimeout);hideConnecting();showNotif('Error: '+err.type,'err');setConn('error','Error');if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);});
+      conn.on('error',e=>{
+        clearTimeout(connectTimeout);clearTimeout(ht);hideConnecting();
+        showNotif('Gagal konek ke host!','err');setConn('error','Gagal');
+        if(peer){try{peer.destroy();}catch(e){}peer=null;}setTimeout(initIdlePeer,300);
+      });
+    }
+
+    doConnect();
   }
 
-  // Destroy peer lama dengan bersih sebelum buat baru
-  if(peer){
+  // Destroy peer lama jika bukan idle (idle peer bisa di-reuse)
+  const peerIsIdle=peer&&peer.open&&!peer.destroyed&&peer.id&&peer.id.startsWith('cks-idle');
+  if(peer&&!peerIsIdle){
     try{peer.destroy();}catch(e){}
     peer=null;
-    setTimeout(doJoin,200);
+    setTimeout(()=>attemptConnect(0),200);
   } else {
-    doJoin();
+    attemptConnect(0);
   }
 }
 function resumeSession(){
@@ -971,11 +1031,15 @@ let connectTimeout=null;
 const showConn=(t,s)=>{document.getElementById('connOverlayTitle').textContent=t||'Menghubungkan...';document.getElementById('connOverlaySub').innerHTML=s||'Mohon tunggu...';document.getElementById('connectingOverlay').classList.add('show');};
 const hideConnecting=()=>document.getElementById('connectingOverlay').classList.remove('show');
 function cancelConnect(){clearTimeout(connectTimeout);hideConnecting();if(peer){peer.destroy();peer=null;}setConn('error','Dibatalkan');showNotif('Dibatalkan','warn');setTimeout(initIdlePeer,300);}
-function initIdlePeer(){
-  const tid='cks-idle-'+Math.random().toString(36).substr(2,6);
-  peer=new Peer(tid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0});
+function initIdlePeer(retry){
+  if(isHost)return;
+  const tid='cks-idle-'+Date.now().toString(36).slice(-5)+Math.random().toString(36).substr(2,4);
+  peer=makePeer(tid);
   peer.on('open',()=>{setConn('ready','Siap Bermain');document.getElementById('createBtn').disabled=false;});
-  peer.on('error',()=>setConn('error','Gagal konek'));
+  peer.on('error',err=>{
+    if(err.type==='unavailable-id'&&!retry){setTimeout(()=>initIdlePeer(true),600);return;}
+    setConn('error','Gagal konek');
+  });
 }
 function showRoomPanel(code){
   roomCode=code;document.getElementById('roomCodeDisplay').textContent=code;document.getElementById('roomPanel').style.display='block';
@@ -989,7 +1053,7 @@ function showRoomPanel(code){
     document.getElementById('startWrap').style.display='block';renderLobbyPlayers();
     broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
     regRoom(code,myName,players.length);saveSession({roomCode:code,myName,hostPeerId:'cks-'+code,isHost:true});
-  
+  }
   }
 }
 const copyRoomCode=()=>{if(roomCode)navigator.clipboard.writeText(roomCode).then(()=>showNotif('Kode disalin: '+roomCode,'ok'));};
