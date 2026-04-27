@@ -262,6 +262,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* Particle stars for queen */
 @keyframes starFloat{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-30px) rotate(180deg);opacity:0}}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div id="notif" class="notif"></div>
@@ -524,9 +526,12 @@ function beats(nc,lp){
 
 /* ═══════ SESSION ═══════ */
 const SK='cks_v2_session';
+const NAME_LS='cks_playername';
 const saveSession=d=>{try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){}};
 const loadSession=()=>{try{const s=localStorage.getItem(SK);return s?JSON.parse(s):null;}catch(e){return null;}};
 const clearSession=()=>{localStorage.removeItem(SK);document.getElementById('sessionBanner').style.display='none';};
+const savePlayerName=n=>{try{localStorage.setItem(NAME_LS,n);}catch(e){}};
+const loadPlayerName=()=>{try{return localStorage.getItem(NAME_LS)||'';}catch(e){return '';}};
 
 /* ═══════ ROOM REGISTRY ═══════
    Menggunakan JSONKeeper — gratis, no-auth, CORS-friendly.
@@ -664,12 +669,13 @@ function onMsg(data,from){
     case 'join':
       if(!isHost)break;
       {const existById=players.find(p=>p.id===from);
-      const existByName=!existById&&gs.started&&players.find(p=>p.name===data.name);
+      const existByName=!existById&&players.find(p=>p.name===data.name);
+      // Tolak hanya jika game sedang berjalan DAN pemain ini benar-benar orang baru (bukan rejoin)
       if(gs.started&&!existById&&!existByName){sendTo(from,{type:'denied',msg:'Game sudah dimulai'});break;}
-      if(!gs.started&&players.length>=MAX_P&&!existById){sendTo(from,{type:'denied',msg:'Ruangan penuh (maks 4)'});break;}
+      if(!gs.started&&players.length>=MAX_P&&!existById&&!existByName){sendTo(from,{type:'denied',msg:'Ruangan penuh (maks 4)'});break;}
       if(existByName){
         const oldId=existByName.id;existByName.id=from;existByName.disconnected=false;
-        if(gs.hands[oldId]){gs.hands[from]=gs.hands[oldId];delete gs.hands[oldId];}
+        if(gs.hands&&gs.hands[oldId]){gs.hands[from]=gs.hands[oldId];delete gs.hands[oldId];}
         if(gs.playerOrder){const oi=gs.playerOrder.indexOf(oldId);if(oi>=0)gs.playerOrder[oi]=from;}
         if(gs.ranks&&gs.ranks[oldId]){gs.ranks[from]=gs.ranks[oldId];delete gs.ranks[oldId];}
         if(gs.currentPlayer===oldId)gs.currentPlayer=from;
@@ -677,12 +683,14 @@ function onMsg(data,from){
         if(gs.finishOrder){const fi=gs.finishOrder.indexOf(oldId);if(fi>=0)gs.finishOrder[fi]=from;}
         delete connections[oldId];
         showNotif(existByName.name+' masuk kembali!','ok');sysmsg(existByName.name+' terhubung kembali');
-      }else if(!existById){players.push({id:from,name:data.name,rank:null,cardCount:0});}
-      else{existById.name=data.name;}
+      }else if(!existById){
+        players.push({id:from,name:data.name,rank:null,cardCount:0});
+      }else{existById.name=data.name;existById.disconnected=false;}
+      // Hapus entry pending jika ada
+      const pi=players.findIndex(p=>p.id==='(pending)');if(pi>=0)players.splice(pi,1);
       if(!connections[from]){
         const c=peer.connect(from,{reliable:true});
         setupConn(c);
-        // Tunggu koneksi balik open sebelum kirim sync — jangan langsung sendTo
         c.on('open',()=>{
           broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
           renderLobbyPlayers();updateReg(roomCode,players.length,gs.started);
@@ -722,8 +730,8 @@ function onMsg(data,from){
 
     case 'gameSync':
       gs=data.gs;if(gs.hands[myId])myHand=[...gs.hands[myId]];
-      // Sync streak data dari host ke client
-      if(gs.streaks){Object.entries(gs.streaks).forEach(([name,s])=>{streakData[name]=s;});saveStreaks();}
+      // Sync title data dari host ke client
+      if(gs.titleSnap){Object.entries(gs.titleSnap).forEach(([name,d])=>{if(!titleData[name])titleData[name]={wins:0,losses:0,asKing:0,asQueen:0,asSlave1:0,asSlave2:0,winStreak:0,loseStreak:0,maxWinStreak:0,maxLoseStreak:0,slaveStreak:0,kingStreak:0,total:0,titles:[]};Object.assign(titleData[name],d);});saveTitles();}
       // If game is in progress but game screen not yet shown (rejoin), transition to game
       if(gs.started&&document.getElementById('game').style.display==='none'){
         document.getElementById('lobby').style.display='none';
@@ -733,7 +741,7 @@ function onMsg(data,from){
         document.getElementById('myNameDisp').textContent=players.find(p=>p.id===myId)?.name||myName||'Kamu';
         showNotif('Kembali ke game! 🃏','ok');
       }
-      renderGame();renderStreakBadge();if(gs.winner)showWin(gs.winner);
+      renderGame();renderTitleBadge();if(gs.winner)showWin(gs.winner);
       if(gs.phase==='exchange'||gs.phase==='nextRound')showExchangeUI();
       else document.getElementById('exchangePanel').style.display='none';
       if(data.notif)showNotif(data.notif[0],data.notif[1]||'');break;
@@ -809,8 +817,8 @@ function endGame(){
   const keys=['king','queen','slave1','slave2'];gs.ranks={};
   gs.finishOrder.forEach((pid,i)=>{gs.ranks[pid]=keys[i]||'slave2';});
   players.forEach(p=>{if(gs.ranks[p.id])p.rank=gs.ranks[p.id];});
-  updateStreaksForRound(gs.finishOrder);
-  // Tampilkan hasil ronde dulu, host klik "Ronde Lagi" → startNextRound deal dek baru + exchange
+  updateTitlesForRound(gs.finishOrder);
+  logMatchToFirebase(gs.finishOrder);
   gs.winner=gs.finishOrder[0];
   gs.phase='done';
   gs.log='Ronde selesai!';
@@ -877,9 +885,11 @@ function startNextRound(){
 /* ═══════ LOBBY ═══════ */
 const genCode=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<6;i++)r+=c[Math.floor(Math.random()*c.length)];return r;};
 
-function createRoom(){
+function createRoom(existingCode){
   myName=document.getElementById('playerName').value.trim()||document.getElementById('playerName').placeholder;
-  if(peer)peer.destroy();isHost=true;const code=genCode();
+  savePlayerName(myName);
+  if(peer){try{peer.destroy();}catch(e){}peer=null;}
+  isHost=true;const code=existingCode||genCode();
   players=[{id:'(pending)',name:myName,rank:null,cardCount:0}];
   showConn('Membuat Ruangan','Mendaftarkan ke server...');
   connectTimeout=setTimeout(()=>{hideConnecting();showNotif('Gagal buat ruangan!','err');setConn('error','Timeout');isHost=false;setTimeout(initIdlePeer,300);},15000);
@@ -889,6 +899,7 @@ function joinRoom(){
   const raw=document.getElementById('joinCode').value.trim().toUpperCase();
   if(raw.length<4){showNotif('Kode minimal 4 karakter!','err');return;}
   myName=document.getElementById('playerName').value.trim()||document.getElementById('playerName').placeholder;
+  savePlayerName(myName);
   isHost=false;const hp='cks-'+raw;
 
   showConn('Menghubungkan','Mencari ruangan <strong style="color:var(--gold-l)">'+raw+'</strong>...');
@@ -936,9 +947,18 @@ function joinRoom(){
 }
 function resumeSession(){
   const s=loadSession();if(!s)return;
-  const n=document.getElementById('playerName');if(s.myName&&!n.value.trim())n.value=s.myName;
-  if(s.isHost){showNotif('Sesi host tidak bisa dilanjutkan — buat ruangan baru','warn');clearSession();return;}
-  document.getElementById('joinCode').value=s.roomCode;joinRoom();
+  const n=document.getElementById('playerName').value.trim();
+  if(s.myName&&!n)document.getElementById('playerName').value=s.myName;
+  myName=s.myName||document.getElementById('playerName').value.trim()||'Pemain';
+  if(s.isHost){
+    // Host rejoin: buat ulang room dengan kode yang sama
+    showConn('Memulihkan','Membuat ulang ruangan <strong style="color:var(--gold-l)">'+s.roomCode+'</strong>...');
+    if(peer){try{peer.destroy();}catch(e){}peer=null;}
+    setTimeout(()=>createRoom(s.roomCode),200);
+    return;
+  }
+  document.getElementById('joinCode').value=s.roomCode;
+  joinRoom();
 }
 let connectTimeout=null;
 const showConn=(t,s)=>{document.getElementById('connOverlayTitle').textContent=t||'Menghubungkan...';document.getElementById('connOverlaySub').innerHTML=s||'Mohon tunggu...';document.getElementById('connectingOverlay').classList.add('show');};
@@ -953,11 +973,17 @@ function initIdlePeer(){
 function showRoomPanel(code){
   roomCode=code;document.getElementById('roomCodeDisplay').textContent=code;document.getElementById('roomPanel').style.display='block';
   if(isHost){
-    players=[{id:myId,name:myName,rank:null,cardCount:0}];
+    // Pastikan host ada di players, tapi jangan reset players yang sudah ada
+    const hostEntry=players.find(p=>p.id===myId||p.id==='(pending)');
+    if(hostEntry){hostEntry.id=myId;hostEntry.name=myName;}
+    else if(!players.find(p=>p.id===myId)){players.unshift({id:myId,name:myName,rank:null,cardCount:0});}
+    // Hapus pending jika sudah dapat myId
+    players=players.filter(p=>p.id!=='(pending)'||p.id===myId);
     document.getElementById('startWrap').style.display='block';renderLobbyPlayers();
     broadcastAll({type:'lobbySync',players,hostId:myId,roomCode});
-    regRoom(code,myName,1);saveSession({roomCode:code,myName,hostPeerId:'cks-'+code,isHost:true});
+    regRoom(code,myName,players.length);saveSession({roomCode:code,myName,hostPeerId:'cks-'+code,isHost:true});
   }
+  
 }
 const copyRoomCode=()=>{if(roomCode)navigator.clipboard.writeText(roomCode).then(()=>showNotif('Kode disalin: '+roomCode,'ok'));};
 const RI={king:'👑',queen:'👸',slave1:'⛓️',slave2:'😢'};
@@ -1017,7 +1043,7 @@ function beginGameUI(){
   document.getElementById('lobby').style.display='none';document.getElementById('game').style.display='flex';
   document.getElementById('exchangePanel').style.display='none';selCards=[];exchangeMode=null;
   document.getElementById('myNameDisp').textContent=players.find(p=>p.id===myId)?.name||'Kamu';
-  renderGame();renderStreakBadge();showNotif('Game dimulai! 🃏','ok');sysmsg('Game dimulai!');
+  renderGame();renderTitleBadge();showNotif('Game dimulai! 🃏','ok');sysmsg('Game dimulai!');
 }
 function renderGame(){
   renderOpp();renderHand();renderFelt();updateTurnUI();if(gs.log)setLog(gs.log);
@@ -1039,114 +1065,205 @@ function renderGame(){
     }
   }
 }
-/* ═══════ STREAK SYSTEM ═══════ */
-const STREAK_LS='cks_streaks_v1';
-// streak per nama pemain: {wins, losses, winStreak, loseStreak, maxWinStreak, maxLoseStreak, total}
-let streakData={};
+/* ═══════ TITLE / JULUKAN SYSTEM ═══════
+   Data per pemain (by name, localStorage):
+   { wins, losses, asKing, asQueen, asSlave1, asSlave2,
+     winStreak, loseStreak, maxWinStreak, maxLoseStreak,
+     slaveStreak, kingStreak, total, titles:[] }
+════════════════════════════════════════════ */
+const TITLE_LS='cks_titles_v1';
+let titleData={};
 
-function loadStreaks(){
-  try{const s=localStorage.getItem(STREAK_LS);if(s)streakData=JSON.parse(s);}catch(e){}
+/* ── Daftar Title ── */
+const TITLES=[
+  // Slave titles
+  {id:'forever_slave',   emoji:'⛓️', name:'Forever Slave',      desc:'Slave 10x berturut-turut',  check:s=>s.slaveStreak>=10},
+  {id:'born_to_suffer',  emoji:'😭', name:'Born to Suffer',     desc:'Total slave 20x',            check:s=>(s.asSlave1+s.asSlave2)>=20},
+  {id:'chain_collector', emoji:'🔗', name:'Chain Collector',    desc:'Total slave 10x',            check:s=>(s.asSlave1+s.asSlave2)>=10},
+  {id:'the_floor',       emoji:'🧹', name:'The Floor',          desc:'Slave2 sebanyak 5x',         check:s=>s.asSlave2>=5},
+  {id:'professional_loser',emoji:'📉',name:'Professional Loser',desc:'Kalah 15x',                  check:s=>s.losses>=15},
+  {id:'rock_bottom',     emoji:'🪨', name:'Rock Bottom',        desc:'Kalah 5x berturut-turut',    check:s=>s.maxLoseStreak>=5},
+  {id:'doormat',         emoji:'🚪', name:'Doormat',            desc:'Slave 3x berturut-turut',    check:s=>s.slaveStreak>=3},
+  {id:'underdog',        emoji:'🐕', name:'Underdog',           desc:'Slave lalu menang beruntun',  check:s=>s.slaveStreak>=2&&s.winStreak>=2},
+  // King/Queen titles
+  {id:'born_to_rule',    emoji:'👑', name:'Born to Rule',       desc:'King 10x',                   check:s=>s.asKing>=10},
+  {id:'iron_throne',     emoji:'🗡️', name:'Iron Throne',        desc:'King 5x berturut-turut',     check:s=>s.kingStreak>=5},
+  {id:'power_couple',    emoji:'💑', name:'Power Couple',       desc:'King/Queen 10x',             check:s=>(s.asKing+s.asQueen)>=10},
+  {id:'untouchable',     emoji:'🛡️', name:'Untouchable',        desc:'Menang 10x berturut-turut',  check:s=>s.maxWinStreak>=10},
+  {id:'king_of_kings',   emoji:'🏆', name:'King of Kings',      desc:'King 20x',                   check:s=>s.asKing>=20},
+  {id:'the_noble',       emoji:'🎖️', name:'The Noble',          desc:'Menang 10x total',           check:s=>s.wins>=10},
+  {id:'on_a_roll',       emoji:'🎲', name:'On a Roll',          desc:'Menang 3x berturut-turut',   check:s=>s.winStreak>=3},
+  {id:'comeback_kid',    emoji:'⚡', name:'Comeback Kid',       desc:'Menang setelah 3x kalah',    check:s=>s.maxLoseStreak>=3&&s.winStreak>=1},
+  // Milestone titles
+  {id:'veteran',         emoji:'🎗️', name:'Veteran',            desc:'Main 25x',                   check:s=>s.total>=25},
+  {id:'grinder',         emoji:'⚙️', name:'The Grinder',        desc:'Main 10x',                   check:s=>s.total>=10},
+  {id:'card_shark',      emoji:'🦈', name:'Card Shark',         desc:'Win rate >70% (min 10 game)',check:s=>s.total>=10&&s.wins/s.total>=0.7},
+  {id:'coin_flip',       emoji:'🪙', name:'Coin Flip',          desc:'Win rate 45-55% (min 10)',   check:s=>s.total>=10&&s.wins/s.total>=0.45&&s.wins/s.total<=0.55},
+  {id:'chaos_agent',     emoji:'🌪️', name:'Chaos Agent',        desc:'Win rate <30% (min 10)',     check:s=>s.total>=10&&s.wins/s.total<0.3},
+  {id:'first_blood',     emoji:'🩸', name:'First Blood',        desc:'Main pertama kali',          check:s=>s.total>=1},
+  {id:'jack_of_all',     emoji:'🃏', name:'Jack of All',        desc:'Pernah jadi semua role',     check:s=>s.asKing>=1&&s.asQueen>=1&&s.asSlave1>=1&&s.asSlave2>=1},
+];
+
+function loadTitles(){
+  try{const s=localStorage.getItem(TITLE_LS);if(s)titleData=JSON.parse(s);}catch(e){}
 }
-function saveStreaks(){
-  try{localStorage.setItem(STREAK_LS,JSON.stringify(streakData));}catch(e){}
+function saveTitles(){
+  try{localStorage.setItem(TITLE_LS,JSON.stringify(titleData));}catch(e){}
 }
-function getStreak(name){
-  if(!streakData[name])streakData[name]={wins:0,losses:0,winStreak:0,loseStreak:0,maxWinStreak:0,maxLoseStreak:0,total:0};
-  return streakData[name];
+function getPlayerData(name){
+  if(!titleData[name])titleData[name]={wins:0,losses:0,asKing:0,asQueen:0,asSlave1:0,asSlave2:0,winStreak:0,loseStreak:0,maxWinStreak:0,maxLoseStreak:0,slaveStreak:0,kingStreak:0,total:0,titles:[]};
+  return titleData[name];
 }
-function recordResult(name,isWin){
-  const s=getStreak(name);s.total++;
+function checkNewTitles(name){
+  const s=getPlayerData(name);const newOnes=[];
+  TITLES.forEach(t=>{
+    if(!s.titles.includes(t.id)&&t.check(s)){s.titles.push(t.id);newOnes.push(t);}
+  });
+  return newOnes;
+}
+function getActiveTitles(name){
+  const s=getPlayerData(name);
+  return TITLES.filter(t=>s.titles.includes(t.id));
+}
+function getBestTitle(name){
+  const active=getActiveTitles(name);
+  return active.length?active[active.length-1]:null;
+}
+function recordRoundResult(name,role){
+  const s=getPlayerData(name);s.total++;
+  const isWin=role==='king'||role==='queen';
+  const isSlave=role==='slave1'||role==='slave2';
+  if(role==='king')s.asKing++;
+  else if(role==='queen')s.asQueen++;
+  else if(role==='slave1')s.asSlave1++;
+  else if(role==='slave2')s.asSlave2++;
   if(isWin){
-    s.wins++;s.winStreak++;s.loseStreak=0;
+    s.wins++;s.winStreak++;s.loseStreak=0;s.slaveStreak=0;
+    if(role==='king'){s.kingStreak++;}else{s.kingStreak=0;}
     if(s.winStreak>s.maxWinStreak)s.maxWinStreak=s.winStreak;
   } else {
-    s.losses++;s.loseStreak++;s.winStreak=0;
+    s.losses++;s.loseStreak++;s.winStreak=0;s.kingStreak=0;
+    if(isSlave){s.slaveStreak++;}else{s.slaveStreak=0;}
     if(s.loseStreak>s.maxLoseStreak)s.maxLoseStreak=s.loseStreak;
   }
-  saveStreaks();
+  saveTitles();
+  return checkNewTitles(name);
 }
-// Dipanggil host saat ronde selesai, lalu broadcast via gameSync
-function updateStreaksForRound(finishOrder){
-  // King = menang, Queen = menang, Slave1 = kalah, Slave2 = kalah
+function updateTitlesForRound(finishOrder){
+  const newTitleEvents=[];
   finishOrder.forEach((pid,i)=>{
     const p=players.find(x=>x.id===pid);if(!p)return;
-    const isWin=i<=1; // posisi 0 (king) dan 1 (queen) = menang
-    recordResult(p.name,isWin);
+    const roleKeys=['king','queen','slave1','slave2'];
+    const role=roleKeys[i]||'slave2';
+    const newT=recordRoundResult(p.name,role);
+    if(newT.length)newTitleEvents.push({name:p.name,titles:newT,pid});
   });
-  // Sertakan streak di gs agar bisa di-broadcast ke semua client
-  gs.streaks=buildStreakSnapshot();
+  gs.titleSnap=buildTitleSnap();
+  gs.newTitleEvents=newTitleEvents;
 }
-// Buat snapshot streak untuk semua player yang ada di room (dikirim via gameSync)
-function buildStreakSnapshot(){
+function buildTitleSnap(){
   const snap={};
-  players.forEach(p=>{snap[p.name]=getStreak(p.name);});
+  players.forEach(p=>{
+    const d=titleData[p.name];
+    if(d)snap[p.name]={total:d.total,wins:d.wins,losses:d.losses,winStreak:d.winStreak,loseStreak:d.loseStreak,titles:d.titles||[]};
+  });
   return snap;
 }
-function renderStreakBadge(){
+
+/* ── Render title badge di header ── */
+function renderTitleBadge(){
   const myN=players.find(p=>p.id===myId)?.name||myName;
-  const s=streakData[myN]||(gs.streaks?.[myN]);
   const el=document.getElementById('myStreakBadge');if(!el)return;
-  if(!s||s.total===0){el.style.display='none';return;}
+  const snap=gs.titleSnap?.[myN]||titleData[myN];
+  if(!snap||!snap.titles||!snap.titles.length){el.style.display='none';return;}
+  const best=TITLES.filter(t=>snap.titles.includes(t.id)).pop();
+  if(!best){el.style.display='none';return;}
   el.style.display='inline-flex';
-  if(s.winStreak>=2){
-    el.textContent='🔥'+s.winStreak+' WS';
-    el.style.background='rgba(201,168,76,.2)';el.style.border='1px solid rgba(201,168,76,.5)';el.style.color='var(--gold-l)';
-  } else if(s.loseStreak>=2){
-    el.textContent='💀'+s.loseStreak+' LS';
-    el.style.background='rgba(239,68,68,.15)';el.style.border='1px solid rgba(239,68,68,.4)';el.style.color='#fca5a5';
-  } else if(s.winStreak===1){
-    el.textContent='✅ W';
-    el.style.background='rgba(46,213,115,.1)';el.style.border='1px solid rgba(46,213,115,.3)';el.style.color='var(--success)';
-  } else {
-    el.textContent='❌ L';
-    el.style.background='rgba(239,68,68,.08)';el.style.border='1px solid rgba(239,68,68,.2)';el.style.color='#fca5a5';
-  }
+  el.textContent=best.emoji+' '+best.name;
+  const isWinTitle=['born_to_rule','iron_throne','power_couple','untouchable','king_of_kings','the_noble','on_a_roll','comeback_kid','card_shark'].includes(best.id);
+  if(isWinTitle){el.style.background='rgba(201,168,76,.2)';el.style.border='1px solid rgba(201,168,76,.5)';el.style.color='var(--gold-l)';}
+  else if(['forever_slave','born_to_suffer','rock_bottom','the_floor','professional_loser','doormat'].includes(best.id)){el.style.background='rgba(239,68,68,.15)';el.style.border='1px solid rgba(239,68,68,.4)';el.style.color='#fca5a5';}
+  else{el.style.background='rgba(168,85,247,.15)';el.style.border='1px solid rgba(168,85,247,.4)';el.style.color='#e879f9';}
 }
-function renderWinStreakBar(finishOrder){
+
+/* ── Title bar di win screen ── */
+function renderTitleBar(finishOrder){
   const el=document.getElementById('winStreakBar');if(!el)return;
-  const snap=gs.streaks||{};
-  const chips=finishOrder.map((pid,i)=>{
-    const p=players.find(x=>x.id===pid);if(!p)return '';
-    const s=snap[p.name];if(!s)return '';
-    const isMe=pid===myId;
-    let chip='',cls='neutral';
-    if(s.winStreak>=3){chip=`🔥 ${s.winStreak} Win Streak`;cls='win';}
-    else if(s.winStreak>=2){chip=`🔥 ${s.winStreak} WS`;cls='win';}
-    else if(s.winStreak===1&&i<=1){chip=`✅ W`;cls='win';}
-    else if(s.loseStreak>=3){chip=`💀 ${s.loseStreak} Lose Streak`;cls='lose';}
-    else if(s.loseStreak>=2){chip=`💀 ${s.loseStreak} LS`;cls='lose';}
-    else if(s.loseStreak===1&&i>1){chip=`❌ L`;cls='lose';}
-    if(!chip)return '';
-    return `<span class="streak-chip ${cls}${isMe?' streak-fire':''}">${chip}${isMe?' (Kamu)':' '+esc(p.name)}</span>`;
-  }).filter(Boolean).join('');
-  el.innerHTML=chips||'';
+  // New title unlocked events
+  const events=gs.newTitleEvents||[];
+  if(!events.length){el.innerHTML='';return;}
+  el.innerHTML=events.map(ev=>{
+    const isMe=ev.pid===myId;
+    return ev.titles.map(t=>`<span class="streak-chip win${isMe?' streak-fire':''}">🔓 ${t.emoji} "${t.name}"${isMe?' (Kamu)':' '+esc(ev.name)}</span>`).join('');
+  }).join('');
 }
-function makeStreakTable(finishOrder){
-  const snap=gs.streaks||{};
-  const rows=finishOrder.map((pid,i)=>{
+
+/* ── Tabel title di win screen ── */
+function makeTitleTable(finishOrder){
+  const snap=gs.titleSnap||{};
+  const rows=finishOrder.map((pid)=>{
     const p=players.find(x=>x.id===pid);if(!p)return '';
-    const s=snap[p.name];if(!s||s.total===0)return '';
+    const d=snap[p.name]||titleData[p.name];if(!d||!d.total)return '';
     const isMe=pid===myId;
-    const ws=s.winStreak>=2?`🔥${s.winStreak}`:(s.winStreak===1?'✅1':'—');
-    const ls=s.loseStreak>=2?`💀${s.loseStreak}`:(s.loseStreak===1?'❌1':'—');
-    const wr=s.total>0?Math.round(s.wins/s.total*100)+'%':'—';
+    const activeTitles=TITLES.filter(t=>(d.titles||[]).includes(t.id));
+    const best=activeTitles.length?activeTitles[activeTitles.length-1]:null;
+    const wr=d.total>0?Math.round(d.wins/d.total*100)+'%':'—';
+    const titleHtml=best?`<span style="font-size:.72rem">${best.emoji} ${best.name}</span>`:`<span style="color:rgba(240,234,216,.3);font-size:.7rem">Belum ada</span>`;
     return `<tr style="${isMe?'background:rgba(201,168,76,.07)':''}">
-      <td style="${isMe?'color:var(--gold-l)':''}">${esc(p.name)}${isMe?' (Kamu)':''}</td>
-      <td style="color:var(--gold-l)">${ws}</td>
-      <td style="color:#fca5a5">${ls}</td>
-      <td style="color:rgba(240,234,216,.6)">${s.wins}W/${s.losses}L</td>
-      <td style="color:rgba(240,234,216,.5)">${wr}</td>
+      <td style="${isMe?'color:var(--gold-l)':''};font-size:.78rem">${esc(p.name)}${isMe?' <span style="opacity:.4;font-size:.65rem">(Kamu)</span>':''}</td>
+      <td>${titleHtml}</td>
+      <td style="color:rgba(240,234,216,.5);font-size:.75rem">${d.wins}W/${d.losses}L</td>
+      <td style="color:rgba(240,234,216,.5);font-size:.75rem">${wr}</td>
     </tr>`;
   }).filter(Boolean).join('');
   if(!rows)return '';
-  return `<div style="font-size:.7rem;color:rgba(240,234,216,.35);margin:.65rem 0 .3rem;letter-spacing:1px;text-transform:uppercase">📊 Statistik Sesi</div>
+  return `<div style="font-size:.7rem;color:rgba(240,234,216,.35);margin:.7rem 0 .3rem;letter-spacing:1px;text-transform:uppercase">🎖️ Gelar & Statistik</div>
   <table class="streak-table">
-    <tr style="font-size:.68rem;color:rgba(240,234,216,.35)">
-      <td>Nama</td><td>🔥WS</td><td>💀LS</td><td>W/L</td><td>WR%</td>
-    </tr>
+    <tr style="font-size:.67rem;color:rgba(240,234,216,.32)"><td>Nama</td><td>Gelar</td><td>W/L</td><td>WR%</td></tr>
     ${rows}
   </table>`;
 }
+
+/* ═══════ FIREBASE MATCH LOG ═══════ */
+const FB_CFG={
+  apiKey:'AIzaSyD2G5cYkoH59dyP_T1Re-3jbrUw1_Wx54k',
+  authDomain:'games-45d15.firebaseapp.com',
+  projectId:'games-45d15',
+  storageBucket:'games-45d15.firebasestorage.app',
+  messagingSenderId:'15488632181',
+  appId:'1:15488632181:web:f4ee624d2febb6a6be7f3c',
+  measurementId:'G-X47ZG7C9P0',
+  databaseURL:'https://games-45d15-default-rtdb.firebaseio.com'
+};
+let fbReady=false;
+function initFirebase(){
+  try{
+    if(typeof firebase==='undefined')return;
+    if(!firebase.apps.length)firebase.initializeApp(FB_CFG);
+    fbReady=true;
+    console.log('[Firebase] Connected ✓');
+  }catch(e){fbReady=false;console.warn('[Firebase] Init failed:',e);}
+}
+async function logMatchToFirebase(finishOrder){
+  if(!fbReady)return;
+  try{
+    const roleKeys=['king','queen','slave1','slave2'];
+    const entry={
+      ts:Date.now(),
+      date:new Date().toISOString(),
+      roomCode,
+      results:finishOrder.map((pid,i)=>({
+        name:players.find(p=>p.id===pid)?.name||'?',
+        role:roleKeys[i]||'slave2',
+        position:i+1
+      })),
+      playerCount:finishOrder.length
+    };
+    await firebase.database().ref('matches').push(entry);
+    console.log('[Firebase] Match logged ✓');
+  }catch(e){console.warn('[Firebase] Log failed:',e);}
+}
+
 const ROLE_CFG={
   king:{emoji:'👑',label:'King',cls:'role-king',desc:'Penguasa tertinggi',
     crown:'<div class="role-crown">👑</div>',
@@ -1194,9 +1311,13 @@ function renderOpp(){
     const turnDot=`<span class="turn-dot ${iT?'on':''}"></span>`;
     const skipped=(gs.skippedPlayers||[]).includes(p.id);
     const skippedTag=skipped?`<span style="font-size:.6rem;color:var(--error);margin-left:2px">✗skip</span>`:'';
+    const snap=gs.titleSnap?.[p.name]||titleData[p.name];
+    const bestTitle=snap&&snap.titles&&snap.titles.length?TITLES.filter(t=>snap.titles.includes(t.id)).pop():null;
+    const titleTag=bestTitle?`<div style="font-size:.62rem;color:rgba(240,234,216,.45);margin-top:1px">${bestTitle.emoji} ${bestTitle.name}</div>`:'';
     return `<div class="opp-zone ${pr?'has-role':''}">
       <div class="opp-role-frame">${avatarHtml}</div>
       <div class="opp-name">${turnDot}${esc(p.name)}${skippedTag}</div>
+      ${titleTag}
       <div class="opp-cards">${bH}</div>
       <div class="opp-count">${cnt} kartu</div>
     </div>`;
@@ -1343,7 +1464,7 @@ function showWin(wid){
   document.getElementById('winTitle').style.color=roleColors[myRoleKey];
 
   // Streak bar (prominent streaks)
-  renderWinStreakBar(fo);
+  renderTitleBar(fo);
 
   const list=fo.map((pid,i)=>{
     const rk=roleKeys[i]||'slave2';const cfg=ROLE_CFG[rk];
@@ -1365,10 +1486,10 @@ function showWin(wid){
 
   document.getElementById('winSub').innerHTML=
     `<div style="font-size:.74rem;color:rgba(240,234,216,.35);margin-bottom:.6rem;letter-spacing:1px;text-transform:uppercase">Hasil Ronde</div>${list}`+
-    makeStreakTable(fo);
+    makeTitleTable(fo);
   document.getElementById('nextRoundBtn').style.display=isHost?'block':'none';
   // Update streak badge in header
-  renderStreakBadge();
+  renderTitleBadge();
 }
 function backToLobby(){
   document.getElementById('winScreen').classList.remove('show');document.getElementById('game').style.display='none';
@@ -1456,15 +1577,26 @@ document.addEventListener('DOMContentLoaded',()=>{
   const ph='Pemain'+Math.floor(Math.random()*99+1);
   document.getElementById('playerName').placeholder=ph;
   document.getElementById('joinCode').addEventListener('input',function(){this.value=this.value.toUpperCase();});
-  loadStreaks();
+  loadTitles();
+  initFirebase();
   initStickers();
+
+  // Auto-fill nama dari localStorage
+  const savedName=loadPlayerName();
+  if(savedName)document.getElementById('playerName').value=savedName;
+
+  // Simpan nama saat input berubah
+  document.getElementById('playerName').addEventListener('input',function(){
+    if(this.value.trim())savePlayerName(this.value.trim());
+  });
 
   // Session banner
   const sess=loadSession();
   if(sess){
     const b=document.getElementById('sessionBanner');b.style.display='flex';
-    document.getElementById('sessionBannerTitle').textContent='Lanjutkan: Ruangan '+sess.roomCode;
-    document.getElementById('sessionBannerSub').textContent='Sebagai '+sess.myName+' — klik untuk masuk kembali';
+    const role=sess.isHost?'👑 Host':'👤 Pemain';
+    document.getElementById('sessionBannerTitle').textContent=(sess.isHost?'Buat ulang: ':'Lanjutkan: ')+'Ruangan '+sess.roomCode;
+    document.getElementById('sessionBannerSub').textContent=role+' '+sess.myName+' — klik untuk masuk kembali';
     if(sess.myName)document.getElementById('playerName').value=sess.myName;
   }
 
